@@ -1,0 +1,25 @@
+# Copyright 2021 Google LLC
+#
+# This source code is licensed under the BSD-style license found in the
+# LICENSE file in the root directory of this source tree.
+
+- name: xnn_x32_transpose_ukernel__avx_32x32
+- name: xnn_x32_transpose_ukernel__avx_64x32
+- name: xnn_x32_transpose_ukernel__avx_18x32
+- name: xnn_x32_transpose_ukernel__avx_32x18
+- name: xnn_x32_transpose_ukernel__avx_19x31
+- name: xnn_x32_transpose_ukernel__sse_32x32
+- name: xnn_x32_transpose_ukernel__sse_64x32
+- name: xnn_x32_transpose_ukernel__sse_18x32
+- name: xnn_x32_transpose_ukernel__sse_32x18
+- name: xnn_x32_transpose_ukernel__sse_19x31
+- name: xnn_x32_transpose_ukernel__neon_32x32
+- name: xnn_x32_transpose_ukernel__neon_64x32
+- name: xnn_x32_transpose_ukernel__neon_18x32
+- name: xnn_x32_transpose_ukernel__neon_32x18
+- name: xnn_x32_transpose_ukernel__neon_19x31
+- name: xnn_x32_transpose_ukernel__wasmsimd_32x32
+- name: xnn_x32_transpose_ukernel__wasmsimd_64x32
+- name: xnn_x32_transpose_ukernel__wasmsimd_18x32
+- name: xnn_x32_transpose_ukernel__wasmsimd_32x18
+- name: xnn_x32_transpose_ukernel__wasmsimd_19x31
