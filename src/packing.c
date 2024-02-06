@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include <stdio.h>
 #include <string.h>
 
 #include <fp16/fp16.h>
@@ -305,6 +306,78 @@ void xnn_pack_qs8_gemm_goi_w(
         packed_weights = (int8_t*) packed_weights + (nr - nr_block_size) * kr;
       }
       packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes);
+    }
+    k += nc * kc;
+    if XNN_UNPREDICTABLE(b != NULL) {
+      b += nc;
+    }
+  } while (--g != 0);
+}
+
+void xnn_pack_qs8_gemm_bl_goi_w(
+  size_t g,
+  size_t nc,
+  size_t kc,
+  size_t nr,
+  size_t kr,
+  size_t sr,
+  size_t bl,
+  const int8_t* k,
+  const int32_t* b,
+  const int32_t* scale,
+  void* packed_weights,
+  size_t extra_bytes,
+  const struct xnn_qs8_packing_params* params)
+{
+  assert(g != 0);
+  assert(nr >= sr);
+  assert(k != NULL);
+  assert(packed_weights != NULL);
+  assert(bl != 0);
+  assert(kc % bl == 0); // must be round number of blocks inside a column
+  assert(bl % kr == 0); // must be round number of kr in a block
+  assert(bl <= kc);
+  assert(kr <= bl);
+
+  const size_t skr = sr * kr;
+  const uint32_t izp = (uint32_t) params->input_zero_point;
+  do {
+    for (size_t nr_block_start = 0; nr_block_start < nc; nr_block_start += nr) {
+      const size_t nr_block_size = min(nc - nr_block_start, nr);
+      int32_t* packed_b = (int32_t*) packed_weights;
+      if XNN_LIKELY(b != NULL) {
+        for (size_t nr_block_offset = 0; nr_block_offset < nr_block_size; nr_block_offset++) {
+          unaligned_store_s32(packed_weights, b[nr_block_start + nr_block_offset]);
+          packed_weights = (int32_t*) packed_weights + 1;
+        }
+      } else {
+        size_t n = nr_block_size;
+        do {
+          unaligned_store_s32(packed_weights, 0);
+          packed_weights = (int32_t*) packed_weights + 1;
+        } while (--n != 0);
+      }
+      packed_weights = (int32_t*) packed_weights + (nr - nr_block_size);
+
+      for (size_t kr_block_start = 0; kr_block_start < round_up_po2(kc, skr); kr_block_start += kr) {
+        for (size_t nr_block_offset = 0; nr_block_offset < nr_block_size; nr_block_offset++) {
+          uint32_t ksum = 0;
+          for (size_t kr_block_offset = 0; kr_block_offset < kr; kr_block_offset++) {
+            const size_t kc_idx = round_down_po2(kr_block_start, skr) + ((kr_block_start + kr_block_offset + nr_block_offset * kr) & (skr - 1));
+            if (kc_idx < kc) {
+              const int8_t kv = k[(nr_block_start + nr_block_offset) * kc + kc_idx];
+              ksum += (uint32_t) kv;
+              ((int8_t*) packed_weights)[kr_block_offset] = kv;
+            }
+          }
+          unaligned_indexed_store_u32(packed_b, nr_block_offset, unaligned_indexed_load_u32(packed_b, nr_block_offset) - ksum * izp);
+          packed_weights = (int8_t*) packed_weights + kr;
+        }
+        if ((kr + kr_block_start) % bl == 0) {
+          packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes);
+        }
+        packed_weights = (int8_t*) packed_weights + (nr - nr_block_size) * kr;
+      }
     }
     k += nc * kc;
     if XNN_UNPREDICTABLE(b != NULL) {
