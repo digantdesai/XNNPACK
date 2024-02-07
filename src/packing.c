@@ -330,13 +330,14 @@ void xnn_pack_qs8_gemm_bl_goi_w(
 {
   assert(g != 0);
   assert(nr >= sr);
+  // assert(sr == 1); // TODO
   assert(k != NULL);
   assert(packed_weights != NULL);
   assert(bl != 0);
-  assert(kc % bl == 0); // must be round number of blocks inside a column
+  assert(round_up_po2(kc, kr) % bl == 0); // must be round number of blocks inside a column
   assert(bl % kr == 0); // must be round number of kr in a block
-  assert(bl <= kc);
   assert(kr <= bl);
+  assert(bl <= round_up_po2(kc, kr));
 
   const size_t skr = sr * kr;
   const uint32_t izp = (uint32_t) params->input_zero_point;
@@ -528,6 +529,7 @@ void xnn_pack_qs8_qc4w_gemm_goi_w(
     }
   } while (--g != 0);
 }
+
 void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
   size_t g,
   size_t nc,
@@ -554,9 +556,10 @@ void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
   assert(params != NULL);
   assert(params->kernel_zero_point == 8);
   assert(bl != 0);
-  assert(kc % bl == 0); // must be round number of blocks inside a column
+  // assert(sr == 1); // TODO
+  assert(round_up_po2(kc, kr) % bl == 0); // must be round number of blocks inside a column
   assert(bl % kr == 0); // must be round number of kr
-  assert(bl <= kc);
+  assert(bl <= round_up_po2(kc, kr));
   assert(2 * kr <= bl); // must be at least two kr to avoid back-to-back empty_bytes
 
   const size_t skr = sr * kr;
