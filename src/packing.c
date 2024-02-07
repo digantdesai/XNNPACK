@@ -263,6 +263,10 @@ void xnn_pack_qs8_gemm_goi_w(
   size_t extra_bytes,
   const struct xnn_qs8_packing_params* params)
 {
+  // Temp hack for testing new packing routines
+  xnn_pack_qs8_gemm_bl_goi_w(g, nc, kc, nr, kr, sr, round_up_po2(kc, kr), k, b, scale, packed_weights, extra_bytes, params);
+  return;
+
   assert(g != 0);
   assert(nr >= sr);
   assert(k != NULL);

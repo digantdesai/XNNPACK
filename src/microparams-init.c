@@ -879,6 +879,11 @@ void xnn_init_qs8_qc8w_scale_fp32_params(
   const float scale[XNN_MIN_ELEMENTS(1)],
   void* packed_w)
 {
+  // Temp hack for testing new packing routines
+  xnn_init_qs8_qc8w_bl_scale_fp32_params(
+    channels, channels_tile, channels_subtile, stride, substride, /*num_blocks=*/1, stride, stride_offset, scale, packed_w);
+  return;
+
   const size_t tiled_channels = round_down_po2(channels, channels_tile);
   size_t tile_start = 0;
   for (; tile_start < tiled_channels; tile_start += channels_tile) {
