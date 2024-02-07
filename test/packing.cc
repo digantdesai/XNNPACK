@@ -202,7 +202,7 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kc) {
   size_t g = 1;
   size_t nc = 5;
   size_t kc = 4;
-  size_t nr = 3;
+  size_t nr = 4;
   size_t kr = 2;
   size_t sr = 1;
   size_t bl = kc; // block size
@@ -246,34 +246,36 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kc) {
     /*packed_weight=*/ packed_weights.data() + start_offset);
 
   const std::vector<int8_t> expected = {
-    // nc == 0, 1, 2
+    // nc == 0, 1, 2, 3
     // bias
     26, 0, 0, 0, // 0 + 26
     43, 0, 0, 0, // 1 + 42
     60, 0, 0, 0, // 2 + 58
+    77, 0, 0, 0, // 3 + 74
 
     // Weights
-    5, 6,    9, 10,   13, 14,
-    7, 8,   11, 12,   15, 16,
-
+    5, 6,    9, 10,   13, 14,   17, 18,
+    7, 8,   11, 12,   15, 16,   19, 20,
     // extra bytes 2/nr
     100, 0, 0, 0,
     101, 0, 0, 0,
     102, 0, 0, 0,
+    103, 0, 0, 0,
 
-    // nc == 3, 4, 5
+    // nc == 4
     // bias
-    77, 0, 0, 0, // 3 + 74
     94, 0, 0, 0, // 4 + 90
-     0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
 
     // Weights
-    17, 18,   21, 22,  0, 0,
-    19, 20,   23, 24,  0, 0,
-
+    21, 22,    0, 0,    0, 0,     0, 0,
+    23, 24,    0, 0,    0, 0,     0, 0,
     // extra bytes 2/nr
-    103, 0, 0, 0,
     104, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
       0, 0, 0, 0,
   };
 
@@ -284,7 +286,7 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kr) {
   size_t g = 1;
   size_t nc = 5;
   size_t kc = 4;
-  size_t nr = 3;
+  size_t nr = 4;
   size_t kr = 2;
   size_t sr = 1;
   size_t bl = kr;
@@ -329,49 +331,50 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kr) {
     /*packed_weight=*/ packed_weights.data() + start_offset);
 
   const std::vector<int8_t> expected = {
-    // nc == 0, 1, 2
+    // nc == 0, 1, 2, 3
     // bias
     26, 0, 0, 0, // 0 + 26
     43, 0, 0, 0, // 1 + 42
     60, 0, 0, 0, // 2 + 58
+    77, 0, 0, 0, // 3 + 74
 
     // Weights
-    5, 6,    9, 10,   13, 14,
-
+    5, 6,    9, 10,   13, 14,   17, 18,
     // extra bytes 2/nr
     100, 0, 0, 0,
     102, 0, 0, 0,
     104, 0, 0, 0,
+    106, 0, 0, 0,
 
     // Weights
-    7, 8,   11, 12,   15, 16,
-
+    7, 8,   11, 12,   15, 16,   19, 20,
     // extra bytes 2/nr
     101, 0, 0, 0,
     103, 0, 0, 0,
     105, 0, 0, 0,
+    107, 0, 0, 0,
 
-    // nc == 3, 4, 5
+    // nc == 4
     // bias
-    77, 0, 0, 0, // 3 + 74
     94, 0, 0, 0, // 4 + 90
+    0, 0, 0, 0,
+    0, 0, 0, 0,
     0, 0, 0, 0,
 
     // Weights
-    17, 18,   21, 22,  0, 0,
-
+    21, 22,    0, 0,    0, 0,     0, 0,
     // extra bytes 2/nr
-    106, 0, 0, 0,
     108, 0, 0, 0,
       0, 0, 0, 0,
-
+      0, 0, 0, 0,
+      0, 0, 0, 0,
 
     // Weights
-    19, 20,   23, 24,  0, 0,
-
+    23, 24,     0, 0,    0, 0,     0, 0,
     // extra bytes 2/nr
-    107, 0, 0, 0,
     109, 0, 0, 0,
+      0, 0, 0, 0,
+      0, 0, 0, 0,
       0, 0, 0, 0,
   };
 
