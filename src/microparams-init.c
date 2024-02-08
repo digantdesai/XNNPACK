@@ -940,7 +940,7 @@ void xnn_init_qs8_qc8w_bl_scale_fp32_params(
   size_t num_blocks,
   size_t block_stride,
   size_t stride_offset,
-  const int32_t scale[XNN_MIN_ELEMENTS(1)],
+  const float scale[XNN_MIN_ELEMENTS(1)],
   void* packed_w)
 {
   void* packed_w_saved = packed_w;
@@ -952,7 +952,7 @@ void xnn_init_qs8_qc8w_bl_scale_fp32_params(
       const size_t tile_size = channels_tile;
       for (size_t tile_offset = 0; tile_offset < tile_size; tile_offset++) {
         size_t scale_index = (tile_start + tile_offset) * num_blocks + block_start;
-        unaligned_indexed_store_s32(packed_w, tile_offset, scale[scale_index]);
+        unaligned_indexed_store_f32(packed_w, tile_offset, scale[scale_index]);
       }
       packed_w = (void*) ((uintptr_t) packed_w + stride);
     }
@@ -963,7 +963,7 @@ void xnn_init_qs8_qc8w_bl_scale_fp32_params(
       const size_t tile_size = min(channels - tile_start, channels_subtile);
       for (size_t tile_offset = 0; tile_offset < tile_size; tile_offset++) {
         size_t scale_index = (tile_start + tile_offset) * num_blocks + block_start;
-        unaligned_indexed_store_s32(packed_w, tile_offset, scale[scale_index]);
+        unaligned_indexed_store_f32(packed_w, tile_offset, scale[scale_index]);
       }
       packed_w = (void*) ((uintptr_t) packed_w + substride);
     }

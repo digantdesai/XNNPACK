@@ -163,16 +163,15 @@ TEST(PACK_QD8_F32_QC4W_GEMM_GOI_W, bl_eq_kc) {
   std::iota(b.begin(), b.end(), 0);
   std::vector<uint8_t> k(g * nc * kc / 2);
   k[0] = 0x98; k[1] = 0xBA; k[2] = 0xDC; k[3] = 0xFE; k[4] = 0x10; k[5] = 0x32; k[6] = 0x54; k[7] = 0x76;
-  size_t extra_bytes = sizeof(int32_t); // todo convert it to float
+  size_t extra_bytes = sizeof(float);
   std::vector<uint8_t> packed_weights(g * round_up(nc, nr) * (sizeof(float) + round_up_po2(kc, kr * sr) / 2)
     + k_num_blocks * round_up(nc, nr) * extra_bytes);
   auto a = xnn_qs8_qc4w_packing_params{ 0, 0x8 };
   xnn_pack_qs8_qc4w_gemm_bl_goi_w(g, nc, kc, nr, kr, sr, bl,
     k.data(), b.data(), /*scale=*/nullptr, packed_weights.data(), /*extra_bytes=*/extra_bytes, /*params=*/&a);
 
-  // TODO change it to float
-  std::vector<int32_t> scale(nc * k_num_blocks, 0);
-  std::iota(scale.begin(), scale.end(), 100);
+  std::vector<float> scale(nc * k_num_blocks, 0);
+  std::fill(scale.begin(), scale.end(), 853.6010);
 
   size_t k_stride = round_up_po2(kc, kr * sr * 2 /* planes */);
 
@@ -206,9 +205,8 @@ TEST(PACK_QD8_F32_QC4W_GEMM_GOI_W, bl_eq_kc) {
     // weights.
     0x40, 0x51, 0x62, 0x73, // kr0 | kr1
     0xC8, 0xD9, 0xEA, 0xFB, // kr2 | kr3
-
     // extra bytes.
-    0x64, 0x00, 0x00, 0x00, // kr0...kr3
+    0x77, 0x66, 0x55, 0x44,
   };
   EXPECT_EQ(expected, packed_weights);
 }
@@ -227,16 +225,15 @@ TEST(PACK_QD8_F32_QC4W_GEMM_GOI_W, bl_lt_kc) {
   std::iota(b.begin(), b.end(), 0);
   std::vector<uint8_t> k(g * nc * kc / 2);
   k[0] = 0x98; k[1] = 0xBA; k[2] = 0xDC; k[3] = 0xFE; k[4] = 0x10; k[5] = 0x32; k[6] = 0x54; k[7] = 0x76;
-  size_t extra_bytes = sizeof(int32_t); // todo convert it to float
+  size_t extra_bytes = sizeof(float);
   std::vector<uint8_t> packed_weights(g * round_up(nc, nr) * (sizeof(float) + round_up_po2(kc, kr * sr) / 2)
     + k_num_blocks * round_up(nc, nr) * extra_bytes);
   auto a = xnn_qs8_qc4w_packing_params{ 0, 0x8 };
   xnn_pack_qs8_qc4w_gemm_bl_goi_w(g, nc, kc, nr, kr, sr, bl,
     k.data(), b.data(), /*scale=*/nullptr, packed_weights.data(), /*extra_bytes=*/extra_bytes, /*params=*/&a);
 
-  // TODO change it to float
-  std::vector<int32_t> scale(nc * k_num_blocks, 0);
-  std::iota(scale.begin(), scale.end(), 100);
+  std::vector<float> scale(nc * k_num_blocks, 0);
+  std::fill(scale.begin(), scale.end(), 853.6010);
 
   size_t k_stride = round_up_po2(kc, kr * sr * 2 /* planes */);
 
@@ -263,21 +260,22 @@ TEST(PACK_QD8_F32_QC4W_GEMM_GOI_W, bl_lt_kc) {
     /*packed_weight=*/ packed_weights.data() + start_offset);
 
   const std::vector<uint8_t> expected = {
-    // 1 bias.
+    // bias
     0x00, 0x00, 0x00, 0x00,
 
-    // weights.
+    // weights
     0x40, 0x51, 0x62, 0x73, // kr0 | kr1
-    // extra bytes.
-    0x64, 0x00, 0x00, 0x00, // kr0 + kr1
+    // extra bytes
+    0x77, 0x66, 0x55, 0x44,
 
-    // weights.
+    // weights
     0xC8, 0xD9, 0xEA, 0xFB, // kr2 | kr3
-    // extra bytes.
-    0x65, 0x00, 0x00, 0x00, // kr2 + kr3
+    // extra bytes
+    0x77, 0x66, 0x55, 0x44,
   };
   EXPECT_EQ(expected, packed_weights);
 }
+
 TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, kr_eq_2_nr_eq_3) {
   size_t g = 1;
   size_t nc = 5;
@@ -306,8 +304,7 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, kr_eq_2_nr_eq_3) {
     // Weights
     5, 6,    9, 10,   13, 14,
     7, 8,   11, 12,   15, 16,
-
-    // extra bytes 2/nr
+    // extra bytes
     0, 0,     0, 0,     0, 0,
 
     // nc == 3, 4, 5
@@ -317,10 +314,9 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, kr_eq_2_nr_eq_3) {
     0, 0, 0, 0,
 
     // Weights
-    17, 18,   21, 22,  0, 0,
-    19, 20,   23, 24,  0, 0,
-
-    // extra bytes 2/nr
+    17, 18,   21, 22,   0, 0,
+    19, 20,   23, 24,   0, 0,
+    // extra bytes
     0, 0,     0, 0,     0, 0,
   };
 
@@ -341,14 +337,13 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kc) {
   std::iota(b.begin(), b.end(), 0);
   std::vector<int8_t> k(g * nc * kc);
   std::iota(k.begin(), k.end(), static_cast<int8_t>(b.size()));
-  size_t extra_bytes = sizeof(int32_t);
+  size_t extra_bytes = sizeof(float);
   std::vector<int8_t> packed_weights(g * round_up(nc, nr) *
     (sizeof(float) + round_up_po2(kc, kr * sr)) + round_up(nc, nr) * extra_bytes * k_num_blocks);
   auto a = xnn_qs8_packing_params{-1};
 
-  // TODO change it to float
-  std::vector<int32_t> scale(nc * k_num_blocks, 0);
-  std::iota(scale.begin(), scale.end(), 100);
+  std::vector<float> scale(nc * k_num_blocks, 0);
+  std::fill(scale.begin(), scale.end(), 853.6010);
 
   xnn_pack_qs8_gemm_bl_goi_w(g, nc, kc, nr, kr, sr, bl,
     k.data(), b.data(), /*scale=*/nullptr, packed_weights.data(), extra_bytes * nr, /*params=*/&a);
@@ -385,27 +380,27 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kc) {
     // Weights
     5, 6,    9, 10,   13, 14,   17, 18,
     7, 8,   11, 12,   15, 16,   19, 20,
-    // extra bytes 2/nr
-    100, 0, 0, 0,
-    101, 0, 0, 0,
-    102, 0, 0, 0,
-    103, 0, 0, 0,
+    // extra bytes
+    119, 102, 85, 68,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
 
     // nc == 4
     // bias
     94, 0, 0, 0, // 4 + 90
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
+     0, 0, 0, 0,
+     0, 0, 0, 0,
+     0, 0, 0, 0,
 
     // Weights
     21, 22,    0, 0,    0, 0,     0, 0,
     23, 24,    0, 0,    0, 0,     0, 0,
-    // extra bytes 2/nr
-    104, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
+    // extra bytes
+    119, 102, 85, 68,
+      0,   0,  0,  0,
+      0,   0,  0,  0,
+      0,   0,  0,  0,
   };
 
   EXPECT_EQ(expected, packed_weights);
@@ -425,14 +420,13 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kr) {
   std::iota(b.begin(), b.end(), 0);
   std::vector<int8_t> k(g * nc * kc);
   std::iota(k.begin(), k.end(), static_cast<int8_t>(b.size()));
-  size_t extra_bytes = sizeof(int32_t);
+  size_t extra_bytes = sizeof(float);
   std::vector<int8_t> packed_weights(g * round_up(nc, nr) *
     (sizeof(float) + round_up_po2(kc, kr * sr)) + round_up(nc, nr) * extra_bytes * (kc / bl));
   auto a = xnn_qs8_packing_params{-1};
 
-  // TODO change it to float
-  std::vector<int32_t> scale(nc * k_num_blocks, 0);
-  std::iota(scale.begin(), scale.end(), 100);
+  std::vector<float> scale(nc * k_num_blocks, 0);
+  std::fill(scale.begin(), scale.end(), 853.6010);
 
   xnn_pack_qs8_gemm_bl_goi_w(g, nc, kc, nr, kr, sr, bl,
     k.data(), b.data(), /*scale=*/nullptr, packed_weights.data(), extra_bytes * nr, /*params=*/&a);
@@ -469,19 +463,19 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kr) {
 
     // Weights
     5, 6,    9, 10,   13, 14,   17, 18,
-    // extra bytes 2/nr
-    100, 0, 0, 0,
-    102, 0, 0, 0,
-    104, 0, 0, 0,
-    106, 0, 0, 0,
+    // extra bytes
+    119, 102, 85, 68,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
 
     // Weights
     7, 8,   11, 12,   15, 16,   19, 20,
-    // extra bytes 2/nr
-    101, 0, 0, 0,
-    103, 0, 0, 0,
-    105, 0, 0, 0,
-    107, 0, 0, 0,
+    // extra bytes
+    119, 102, 85, 68,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
 
     // nc == 4
     // bias
@@ -492,19 +486,19 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kr) {
 
     // Weights
     21, 22,    0, 0,    0, 0,     0, 0,
-    // extra bytes 2/nr
-    108, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
+    // extra bytes
+    119, 102, 85, 68,
+      0,   0,  0,  0,
+      0,   0,  0,  0,
+      0,   0,  0,  0,
 
     // Weights
     23, 24,     0, 0,    0, 0,     0, 0,
-    // extra bytes 2/nr
-    109, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, 0,
+    // extra bytes
+    119, 102, 85, 68,
+      0,   0,  0,  0,
+      0,   0,  0,  0,
+      0,   0,  0,  0,
   };
 
   EXPECT_EQ(expected, packed_weights);
@@ -532,9 +526,8 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_lt_kc) {
   xnn_pack_qs8_gemm_bl_goi_w(g, nc, kc, nr, kr, sr, bl,
     k.data(), b.data(), /*scale=*/nullptr, packed_weights.data(), extra_bytes * nr, /*params=*/&a);
 
-  // TODO change it to float
-  std::vector<int32_t> scale(nc * k_num_blocks, 0);
-  std::iota(scale.begin(), scale.end(), 100);
+  std::vector<float> scale(nc * k_num_blocks, 0);
+  std::fill(scale.begin(), scale.end(), 853.6010);
 
   size_t k_stride = round_up_po2(kc, kr * sr);
   size_t k_bytes = k_stride * nr;
@@ -566,18 +559,16 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_lt_kc) {
     // Weights
     4,  5,   12, 13,
     6,  7,   14, 15,
-
     // extra bytes
-    100, 0, 0, 0,
-    102, 0, 0, 0,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
 
     // Weights
     8,  9,   16, 17,
     10, 11,  18, 19,
-
     // extra bytes
-    101, 0, 0, 0,
-    103, 0, 0, 0,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
 
     // nc == 2, 3
     // bias
@@ -587,23 +578,20 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_lt_kc) {
     // Weights
     20, 21,  28, 29,
     22, 23,  30, 31,
-
     // extra bytes
-    104, 0, 0, 0,
-    106, 0, 0, 0,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
 
     // Weights
     24, 25,  32, 33,
     26, 27,  34, 35,
-
     // extra bytes
-    105, 0, 0, 0,
-    107, 0, 0, 0,
+    119, 102, 85, 68,
+    119, 102, 85, 68,
   };
 
   EXPECT_EQ(expected, packed_weights);
 }
-
 
 TEST(PACK_F32_GEMM_GIO_W, g_eq_1) {
   size_t g = 1;
