@@ -13,6 +13,7 @@
 #include <xnnpack/math.h>
 #include <xnnpack/unaligned.h>
 
+#include <stdio.h>
 
 void xnn_qd8_f32_qc8w_gemm_minmax_ukernel_1x2__scalar(
     size_t mr,
@@ -44,30 +45,41 @@ void xnn_qd8_f32_qc8w_gemm_minmax_ukernel_1x2__scalar(
     w = (const int32_t*) w + 2;
 
     size_t k = kc;
-    do {
-      const int32_t va0 = (int32_t) *a0++;
+    size_t n_blocks = 5;
 
-      const int32_t vb0 = (int32_t) ((const int8_t*) w)[0];
-      const int32_t vb1 = (int32_t) ((const int8_t*) w)[1];
-      w = (const int8_t*) w + 2;
+    float vout0x0 = 0.0f;
+    float vout0x1 = 0.0f;
 
-      vacc0x0 += va0 * vb0;
-      vacc0x1 += va0 * vb1;
+    for(size_t bl=0; bl<n_blocks; ++bl) {
+      for(size_t k=kc/n_blocks; k != 0; k -= sizeof(int8_t)) {
+        printf("bl=%zu, k=%zu\n", bl, k);
+        const int32_t va0 = (int32_t) *a0++;
 
-      k -= sizeof(int8_t);
-    } while (k != 0);
+        const int32_t vb0 = (int32_t) ((const int8_t*) w)[0];
+        const int32_t vb1 = (int32_t) ((const int8_t*) w)[1];
+        w = (const int8_t*) w + 2;
 
-    float vout0x0 = (float) vacc0x0;
-    float vout0x1 = (float) vacc0x1;
+        vacc0x0 += va0 * vb0;
+        vacc0x1 += va0 * vb1;
+      }
+      float vf0x0 = (float) vacc0x0;
+      float vf0x1 = (float) vacc0x1;
+
+      const float vfilter_output_scale0 = 1.5; // unaligned_indexed_load_f32(w, 0);
+      vf0x0 *= vfilter_output_scale0;
+      const float vfilter_output_scale1 = 1.5; // unaligned_indexed_load_f32(w, 1);
+      vf0x1 *= vfilter_output_scale1;
+
+      vout0x0 += vf0x0;
+      vout0x1 += vf0x1;
+
+      vacc0x0 = 0;
+      vacc0x1 = 0;
+    }
 
     const float vinput_scale0 = quantization_params[0].inv_scale;
     vout0x0 *= vinput_scale0;
     vout0x1 *= vinput_scale0;
-
-    const float vfilter_output_scale0 = unaligned_indexed_load_f32(w, 0);
-    vout0x0 *= vfilter_output_scale0;
-    const float vfilter_output_scale1 = unaligned_indexed_load_f32(w, 1);
-    vout0x1 *= vfilter_output_scale1;
 
     const float vbias0 = unaligned_indexed_load_f32(w, 2);
     vout0x0 += vbias0;

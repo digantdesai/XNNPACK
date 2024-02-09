@@ -4594,7 +4594,7 @@
       .sr(1)
       .m(1)
       .n(8)
-      .k(4)
+      .k(1024)
       .Test(xnn_qd8_f32_qc8w_gemm_minmax_ukernel_1x8c4__neondot, xnn_init_f32_minmax_scalar_params, xnn_pack_qs8_gemm_goi_w);
   }
 
