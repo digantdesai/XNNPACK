@@ -11,41 +11,32 @@
 #include <benchmark/benchmark.h>
 
 #define BENCHMARK_GEMM(gemm_fn) \
-  BENCHMARK_CAPTURE(gemm_fn, llama2, "Llama2 v1")->Apply(Llama2GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, mobilenet_v1, "MobileNet v1")->Apply(MobileNetV1GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, mobilenet_v2, "MobileNet v2")->Apply(MobileNetV2GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, mobilenet_v3_small, "MobileNet v3 Small")->Apply(MobileNetV3SmallGemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, mobilenet_v3_large, "MobileNet v3 Large")->Apply(MobileNetV3LargeGemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g1, "ShuffleNet v1 (1 group)")->Apply(ShuffleNetV1G1GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g2, "ShuffleNet v1 (2 groups)")->Apply(ShuffleNetV1G2GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g3, "ShuffleNet v1 (3 groups)")->Apply(ShuffleNetV1G3GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g4, "ShuffleNet v1 (4 groups)")->Apply(ShuffleNetV1G4GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g8, "ShuffleNet v1 (8 groups)")->Apply(ShuffleNetV1G8GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, shufflenet_v2_x05, "ShuffleNet v2 0.5X")->Apply(ShuffleNetV2X05GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, shufflenet_v2_x10, "ShuffleNet v2 1.0X")->Apply(ShuffleNetV2X10GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, shufflenet_v2_x15, "ShuffleNet v2 1.5X")->Apply(ShuffleNetV2X15GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, shufflenet_v2_x20, "ShuffleNet v2 2.0X")->Apply(ShuffleNetV2X20GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, inception_v3, "Inception v3")->Apply(InceptionV3GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, resnet18, "ResNet-18")->Apply(ResNet18GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, resnet50, "ResNet-50")->Apply(ResNet50GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, squeezenet_v10, "SqueezeNet 1.0")->Apply(SqueezeNetV10GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, squeezenet_v11, "SqueezeNet 1.1")->Apply(SqueezeNetV11GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, vgg, "VGG")->Apply(VGGGemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, srcnn915, "SRCNN (9-1-5)")->Apply(SRCNN915GemmArguments)->UseRealTime(); \
-  // BENCHMARK_CAPTURE(gemm_fn, srcnn935, "SRCNN (9-3-5)")->Apply(SRCNN935GemmArguments)->UseRealTime();
+  BENCHMARK_CAPTURE(gemm_fn, mobilenet_v1, "MobileNet v1")->Apply(MobileNetV1GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, mobilenet_v2, "MobileNet v2")->Apply(MobileNetV2GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, mobilenet_v3_small, "MobileNet v3 Small")->Apply(MobileNetV3SmallGemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, mobilenet_v3_large, "MobileNet v3 Large")->Apply(MobileNetV3LargeGemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g1, "ShuffleNet v1 (1 group)")->Apply(ShuffleNetV1G1GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g2, "ShuffleNet v1 (2 groups)")->Apply(ShuffleNetV1G2GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g3, "ShuffleNet v1 (3 groups)")->Apply(ShuffleNetV1G3GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g4, "ShuffleNet v1 (4 groups)")->Apply(ShuffleNetV1G4GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, shufflenet_v1_g8, "ShuffleNet v1 (8 groups)")->Apply(ShuffleNetV1G8GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, shufflenet_v2_x05, "ShuffleNet v2 0.5X")->Apply(ShuffleNetV2X05GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, shufflenet_v2_x10, "ShuffleNet v2 1.0X")->Apply(ShuffleNetV2X10GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, shufflenet_v2_x15, "ShuffleNet v2 1.5X")->Apply(ShuffleNetV2X15GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, shufflenet_v2_x20, "ShuffleNet v2 2.0X")->Apply(ShuffleNetV2X20GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, inception_v3, "Inception v3")->Apply(InceptionV3GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, resnet18, "ResNet-18")->Apply(ResNet18GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, resnet50, "ResNet-50")->Apply(ResNet50GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, squeezenet_v10, "SqueezeNet 1.0")->Apply(SqueezeNetV10GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, squeezenet_v11, "SqueezeNet 1.1")->Apply(SqueezeNetV11GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, vgg, "VGG")->Apply(VGGGemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, srcnn915, "SRCNN (9-1-5)")->Apply(SRCNN915GemmArguments)->UseRealTime(); \
+  BENCHMARK_CAPTURE(gemm_fn, srcnn935, "SRCNN (9-3-5)")->Apply(SRCNN935GemmArguments)->UseRealTime();
 
 
 // Removed due to OOM SEGFAULT on 32 bit ARM.
 //  BENCHMARK_CAPTURE(gemm_fn, srcnn955, "SRCNN (9-5-5)")->Apply(SRCNN955GemmArguments)->UseRealTime();
 
-static void Llama2GemmArguments(benchmark::internal::Benchmark* b) {
-  b->ArgNames({"M", "N", "K"});
-
-  /*           M       N         K    */
-  b->Args({   1,     1024,  1 * 1024});
-  b->Args({   1,     1024,  2 * 1024});
-  b->Args({   1,     1024,  4 * 1024});
-}
 
 // ShuffleNet v1 with 1 group.
 static void ShuffleNetV1G1GemmArguments(benchmark::internal::Benchmark* b) {
