@@ -49,8 +49,8 @@ static void GEMMBenchmark(benchmark::State& state,
 
   const size_t mc = state.range(0);
   const size_t nc = state.range(1);
-  const size_t kc = state.range(2);
-
+  size_t kc = state.range(2);
+  kc = 16;
   const size_t nc_stride = benchmark::utils::RoundUp(nc, nr);
   const size_t kc_stride = benchmark::utils::RoundUp(kc, kr * sr);
 
