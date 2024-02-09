@@ -530,8 +530,47 @@
       /*mr=*/1, /*nr=*/16, /*kr=*/4, /*sr=*/1,
       benchmark::utils::CheckNEONDOT);
   }
-
   BENCHMARK_GEMM(qd8_f32_qc4w_gemm_minmax_ukernel_1x16c4__neondot)
+
+  static void qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x2__scalar(benchmark::State& state, const char* net) {
+    GEMMBenchmark(state,
+      xnn_qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x2__scalar,
+      xnn_init_f32_qc4w_minmax_scalar_params,
+      xnn_pack_qs8_qc4w_gemm_bl_goi_w,
+      /*mr=*/1, /*nr=*/2, /*kr=*/1, /*sr=*/1,
+      benchmark::utils::CheckNEONDOT);
+  }
+  BENCHMARK_GEMM(qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x2__scalar)
+
+  static void qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x8c4__neondot(benchmark::State& state, const char* net) {
+    GEMMBenchmark(state,
+      xnn_qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x8c4__neondot,
+      xnn_init_f32_qc4w_minmax_scalar_params,
+      xnn_pack_qs8_qc4w_gemm_bl_goi_w,
+      /*mr=*/1, /*nr=*/8, /*kr=*/4, /*sr=*/1,
+      benchmark::utils::CheckNEONDOT);
+  }
+  BENCHMARK_GEMM(qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x8c4__neondot)
+
+  static void qd8_f32_qc4w_bl_gemm_minmax_ukernel_4x8c4__neondot(benchmark::State& state, const char* net) {
+    GEMMBenchmark(state,
+      xnn_qd8_f32_qc4w_bl_gemm_minmax_ukernel_4x8c4__neondot,
+      xnn_init_f32_qc4w_minmax_scalar_params,
+      xnn_pack_qs8_qc4w_gemm_bl_goi_w,
+      /*mr=*/4, /*nr=*/8, /*kr=*/4, /*sr=*/1,
+      benchmark::utils::CheckNEONDOT);
+  }
+  BENCHMARK_GEMM(qd8_f32_qc4w_bl_gemm_minmax_ukernel_4x8c4__neondot)
+
+  static void qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x16c4__neondot(benchmark::State& state, const char* net) {
+    GEMMBenchmark(state,
+      xnn_qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x16c4__neondot,
+      xnn_init_f32_qc4w_minmax_scalar_params,
+      xnn_pack_qs8_qc4w_gemm_bl_goi_w,
+      /*mr=*/1, /*nr=*/16, /*kr=*/4, /*sr=*/1,
+      benchmark::utils::CheckNEONDOT);
+  }
+  BENCHMARK_GEMM(qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x16c4__neondot)
 #endif  // XNN_ENABLE_ARM_DOTPROD && (XNN_ARCH_ARM || XNN_ARCH_ARM64)
 
 
