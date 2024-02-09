@@ -927,7 +927,6 @@ void GemmMicrokernelTester::Test(
 
   std::random_device random_device;
   auto rng = std::mt19937(random_device());
-  rng.seed(12);
   auto f32rng = std::bind(std::uniform_real_distribution<float>(-1.f, 1.f), std::ref(rng));
   auto scalerng = std::bind(std::uniform_real_distribution<float>(0.5f, 2.f), std::ref(rng));
   auto w8rng = std::bind(
@@ -969,9 +968,7 @@ void GemmMicrokernelTester::Test(
     std::generate(b.begin(), b.end(), std::ref(w8rng));
 
     std::generate(bias.begin(), bias.end(), std::ref(f32rng));
-    // std::generate(kernel_scale.begin(), kernel_scale.end(), std::ref(scalerng));
-    std::fill(kernel_scale.begin(), kernel_scale.end(), 1.5);
-    printf("Scale: %f\n", 1.5);
+    std::generate(kernel_scale.begin(), kernel_scale.end(), std::ref(scalerng));
     std::fill(c.begin(), c.end(), nanf(""));
 
     std::fill(packed_w.begin(), packed_w.end(), 0);
