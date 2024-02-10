@@ -93,6 +93,15 @@ class GemmMicrokernelTester {
     return this->ks_;
   }
 
+  inline GemmMicrokernelTester& bl(size_t bl) {
+    this->bl_ = bl;
+    return *this;
+  }
+
+  inline size_t bl() const {
+    return this->bl_;
+  }
+
   inline size_t packed_k() const {
     return round_up_po2(k(), kr() * sr());
   }
@@ -273,6 +282,11 @@ class GemmMicrokernelTester {
     xnn_pack_qs8_gemm_fn pack) const;
 
   void Test(
+    xnn_qd8_f32_qg8w_gemm_ukernel_fn gemm,
+    xnn_init_f32_minmax_params_fn init_params,
+    xnn_pack_qs8_gemm_bl_fn pack) const;
+
+  void Test(
     xnn_qd8_f16_qc4w_gemm_ukernel_fn gemm,
     xnn_init_f16_qc4w_minmax_params_fn init_params,
     xnn_pack_qs8_qc4w_gemm_fn pack) const;
@@ -441,6 +455,7 @@ class GemmMicrokernelTester {
   size_t n_{1};
   size_t k_{1};
   size_t ks_{1};
+  size_t bl_{1};
   size_t a_stride_{0};
   size_t cm_stride_{0};
   size_t cn_stride_{0};

@@ -18,6 +18,7 @@
 #include <xnnpack/pack.h>
 #include <xnnpack/unaligned.h>
 
+#include <stdio.h>
 
 void xnn_pack_f32_gemm_goi_w(
   size_t g,
@@ -263,6 +264,7 @@ void xnn_pack_qs8_gemm_goi_w(
   size_t extra_bytes,
   const struct xnn_qs8_packing_params* params)
 {
+  printf("Running %s\n", __func__);
   assert(g != 0);
   assert(nr >= sr);
   assert(k != NULL);
@@ -323,11 +325,15 @@ void xnn_pack_qs8_gemm_bl_goi_w(
   size_t bl,
   const int8_t* k,
   const int32_t* b,
-  const int32_t* scale,
+  const float* scale,
   void* packed_weights,
   size_t extra_bytes,
   const struct xnn_qs8_packing_params* params)
 {
+  // xnn_pack_qs8_gemm_goi_w(g, nc, kc, nr, kr, sr, k, b, scale, packed_weights, extra_bytes, params);
+  // return;
+  printf("Running packing fn %s: g: %zu, nc: %zu, kc: %zu, nr: %zu, kr: %zu, sr: %zu, bl: %zu, k: %p, b: %p, scale: %p, packed_weights: %p, extra_bytes: %zu, params: %p\n",
+    __func__, g, nc, kc, nr, kr, sr, bl, k, b, scale, packed_weights, extra_bytes, params);
   assert(g != 0);
   assert(nr >= sr);
   // assert(sr == 1); // TODO
