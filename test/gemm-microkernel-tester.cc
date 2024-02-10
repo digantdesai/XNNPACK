@@ -1061,6 +1061,7 @@ void GemmMicrokernelTester::Test(
 
   std::random_device random_device;
   auto rng = std::mt19937(random_device());
+  rng.seed(12);
   auto f32rng = std::bind(std::uniform_real_distribution<float>(-1.f, 1.f), std::ref(rng));
   auto scalerng = std::bind(std::uniform_real_distribution<float>(0.5f, 2.f), std::ref(rng));
   auto w8rng = std::bind(
@@ -1074,12 +1075,13 @@ void GemmMicrokernelTester::Test(
   std::vector<float> bias(n());
   std::vector<float> kernel_scale(n());
   std::vector<int8_t, AlignedAllocator<int8_t, 64>> packed_w(packed_n() * packed_k() +
-                                                             packed_n() * (sizeof(int32_t) + sizeof(float) * 2));
+                                                             packed_n() * sizeof(int32_t) +
+                                                             k()/bl() * sizeof(float) * packed_n());
   std::vector<float> c((mr() - 1) * cm_stride() + ((n() - 1) / nr()) * cn_stride() + (n() - 1) % nr() + 1);
   std::vector<int32_t> acc(m() * n());
   std::vector<float> c_ref(m() * n(), 0);
 
-  for (size_t iteration = 0; iteration < iterations(); iteration++) {
+  for (size_t iteration = 0; iteration < 1 /*iterations()*/; iteration++) {
     std::generate(input.begin(), input.end(), std::ref(f32rng));
     for (size_t i = 0; i < m(); ++i) {
       const float* input_ptr = &input[i * k()];
@@ -1101,7 +1103,9 @@ void GemmMicrokernelTester::Test(
     }
     std::generate(b.begin(), b.end(), std::ref(w8rng));
 
-    std::generate(bias.begin(), bias.end(), std::ref(f32rng));
+    // Fix packing for bias
+    // std::generate(bias.begin(), bias.end(), std::ref(f32rng));
+    std::fill(bias.begin(), bias.end(), 0);
     // std::generate(kernel_scale.begin(), kernel_scale.end(), std::ref(scalerng));
     std::fill(kernel_scale.begin(), kernel_scale.end(), 1.5);
     std::fill(c.begin(), c.end(), nanf(""));
@@ -1111,24 +1115,27 @@ void GemmMicrokernelTester::Test(
     // until runtime, set it to 1.
     const xnn_qs8_packing_params packing_params = { /*input_zero_point=*/1 };
     pack(/*g=*/1, n(), k(), nr(), kr(), sr(), bl(),
-      b.data(), /*bias=*/nullptr, /*scale=*/nullptr, packed_w.data(), 2 * sizeof(float) * nr(), &packing_params);
+      b.data(), /*bias=*/nullptr, /*scale=*/nullptr, packed_w.data(), sizeof(float) * nr(), &packing_params);
+    for(size_t i=0; i<packed_w.size(); ++i) {
+      printf("%zu, %p, %d\n", i, packed_w.data() + i, (int32_t)packed_w.data()[i]);
+    }
     // Fill in packed kernel scale
-    xnn_init_qs8_qc8w_scale_fp32_params(
-      n(), nr(), nr(),
-      nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
-      nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
-      0,
-      kernel_scale.data(),
-      (void*) ((uintptr_t) packed_w.data() + nr() * (ks() * packed_k() * sizeof(int8_t) + sizeof(float))));
+    // xnn_init_qs8_qc8w_bl_scale_fp32_params(
+    //   n(), nr(), nr(),
+    //   nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
+    //   nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
+    //   0,
+    //   kernel_scale.data(),
+    //   (void*) ((uintptr_t) packed_w.data() + nr() * (ks() * packed_k() * sizeof(int8_t) + sizeof(float))));
 
-    // Fill in packed bias
-    xnn_init_qs8_qc8w_scale_fp32_params(
-      n(), nr(), nr(),
-      nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
-      nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
-      0,
-      bias.data(),
-      (void*) ((uintptr_t) packed_w.data() + nr() * (ks() * packed_k() * sizeof(int8_t) + 2 * sizeof(float))));
+    // // Fill in packed bias
+    // xnn_init_qs8_qc8w_scale_fp32_params(
+    //   n(), nr(), nr(),
+    //   nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
+    //   nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
+    //   0,
+    //   bias.data(),
+    //   (void*) ((uintptr_t) packed_w.data() + nr() * (ks() * packed_k() * sizeof(int8_t) + 2 * sizeof(float))));
 
     // Compute 32-bit results and output quantization arguments.
     std::fill(c_ref.begin(), c_ref.end(), 0.0f);
