@@ -167,12 +167,12 @@ void xnn_qd8_f32_qc8w_bl_gemm_minmax_ukernel_1x2__scalar(
       float vf0x0 = (float) vacc0x0;
       float vf0x1 = (float) vacc0x1;
 
-      const float vfilter_output_scale0 = 1.5; // unaligned_indexed_load_f32(w, 0); w = (const float*) w + 1;
+      const float vfilter_output_scale0 = unaligned_indexed_load_f32(w, 0);
       printf("w: %p, scale0=%4.2f\n", (void*)w, vfilter_output_scale0);
       w = (const float*) w + 1;
       vf0x0 *= vfilter_output_scale0;
 
-      const float vfilter_output_scale1 = 1.5; // unaligned_indexed_load_f32(w, 1); w = (const float*) w + 1;
+      const float vfilter_output_scale1 = unaligned_indexed_load_f32(w, 0);
       printf("w: %p, scale1=%4.2f\n", (void*)w, vfilter_output_scale1);
       w = (const float*) w + 1;
       vf0x1 *= vfilter_output_scale1;

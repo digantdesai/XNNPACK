@@ -1074,6 +1074,7 @@ void GemmMicrokernelTester::Test(
   std::vector<int8_t> b(n() * k());
   std::vector<float> bias(n());
   std::vector<float> kernel_scale(n());
+  std::vector<float> kernel_scale2d(n() * k() / bl());
   std::vector<int8_t, AlignedAllocator<int8_t, 64>> packed_w(packed_n() * packed_k() +
                                                              packed_n() * sizeof(int32_t) +
                                                              k()/bl() * sizeof(float) * packed_n());
@@ -1107,7 +1108,9 @@ void GemmMicrokernelTester::Test(
     // std::generate(bias.begin(), bias.end(), std::ref(f32rng));
     std::fill(bias.begin(), bias.end(), 0);
     // std::generate(kernel_scale.begin(), kernel_scale.end(), std::ref(scalerng));
-    std::fill(kernel_scale.begin(), kernel_scale.end(), 1.5);
+    float kScale = 1.5;
+    std::fill(kernel_scale.begin(), kernel_scale.end(), kScale);
+    std::fill(kernel_scale2d.begin(), kernel_scale2d.end(), kScale);
     std::fill(c.begin(), c.end(), nanf(""));
 
     std::fill(packed_w.begin(), packed_w.end(), 0);
@@ -1116,17 +1119,32 @@ void GemmMicrokernelTester::Test(
     const xnn_qs8_packing_params packing_params = { /*input_zero_point=*/1 };
     pack(/*g=*/1, n(), k(), nr(), kr(), sr(), bl(),
       b.data(), /*bias=*/nullptr, /*scale=*/nullptr, packed_w.data(), sizeof(float) * nr(), &packing_params);
+    printf("Packed weights:\n");
     for(size_t i=0; i<packed_w.size(); ++i) {
       printf("%zu, %p, %d\n", i, packed_w.data() + i, (int32_t)packed_w.data()[i]);
     }
     // Fill in packed kernel scale
-    // xnn_init_qs8_qc8w_bl_scale_fp32_params(
-    //   n(), nr(), nr(),
-    //   nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
-    //   nr() * (ks() * packed_k() * sizeof(int8_t) + 3 * sizeof(float)),
-    //   0,
-    //   kernel_scale.data(),
-    //   (void*) ((uintptr_t) packed_w.data() + nr() * (ks() * packed_k() * sizeof(int8_t) + sizeof(float))));
+    size_t num_blocks = packed_k() / bl();
+    size_t stride =  nr() * (packed_k() * sizeof(int8_t) + num_blocks * sizeof(float) + sizeof(float));
+    size_t block_stride = (bl() + sizeof(float)) * nr();
+    size_t start_offset = nr() * (bl() * sizeof(int8_t) + sizeof(int32_t));
+    uintptr_t start = (uintptr_t) packed_w.data() + start_offset;
+    printf("After update: start: %p (offset: %zu), stride: %zu, num_blocks: %zu, block_stride: %zu\n",
+        start, start_offset, stride, num_blocks, block_stride);
+
+    xnn_init_qs8_qc8w_bl_scale_fp32_params(
+      n(), nr(), nr(),
+      stride,
+      stride,
+      /*num_blocks=*/ num_blocks,
+      /*block_stride=*/ block_stride,
+      0,
+      kernel_scale2d.data(),
+      (void*) start);
+
+    for(size_t i=0; i<packed_w.size(); ++i) {
+      printf("%zu, %p, %d\n", i, packed_w.data() + i, (int32_t)packed_w.data()[i]);
+    }
 
     // // Fill in packed bias
     // xnn_init_qs8_qc8w_scale_fp32_params(
