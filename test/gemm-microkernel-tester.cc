@@ -1110,7 +1110,14 @@ void GemmMicrokernelTester::Test(
     // std::generate(kernel_scale.begin(), kernel_scale.end(), std::ref(scalerng));
     float kScale = 1.5;
     std::fill(kernel_scale.begin(), kernel_scale.end(), kScale);
-    std::fill(kernel_scale2d.begin(), kernel_scale2d.end(), kScale);
+    // std::fill(kernel_scale2d.begin(), kernel_scale2d.end(), kScale);
+    for (size_t oc=0; oc<n(); ++oc){
+      for(size_t ic=0; ic < packed_k()/bl(); ++ic ) {
+        kernel_scale2d[oc*packed_k()/bl() + ic] = kScale;
+      }
+    }
+
+
     std::fill(c.begin(), c.end(), nanf(""));
 
     std::fill(packed_w.begin(), packed_w.end(), 0);
@@ -1155,20 +1162,30 @@ void GemmMicrokernelTester::Test(
     //   bias.data(),
     //   (void*) ((uintptr_t) packed_w.data() + nr() * (ks() * packed_k() * sizeof(int8_t) + 2 * sizeof(float))));
 
-    // Compute 32-bit results and output quantization arguments.
     std::fill(c_ref.begin(), c_ref.end(), 0.0f);
     for (size_t m_index = 0; m_index < m(); m_index++) {
       for (size_t n_index = 0; n_index < n(); n_index++) {
-        int32_t ksum = 0;
-        for (size_t k_index = 0; k_index < k(); k_index++) {
-          ksum += b[n_index * k() + k_index];
-          c_ref[m_index * n() + n_index] +=
-              int32_t(a[m_index * a_stride() + k_index]) *
-              int32_t(b[n_index * k() + k_index]);
+        float kfsum = 0;
+        for (size_t bl_index = 0; bl_index < num_blocks; bl_index++) {
+          int32_t ksum = 0;
+          int32_t c_ref_acc = 0;
+          for (size_t kr_index = 0; kr_index < bl(); kr_index++) {
+            size_t k_index = bl_index * num_blocks + kr_index;
+            ksum += b[n_index * k() + k_index];
+            // todo check for packed_k > k
+            c_ref_acc +=
+                int32_t(a[m_index * a_stride() + k_index]) *
+                int32_t(b[n_index * k() + k_index]);
+          }
+          size_t scale_index = n_index * num_blocks + bl_index;
+          float scale = kernel_scale2d[scale_index];
+          printf("Ref int acc: %d\n", c_ref_acc);
+          c_ref[m_index * n() + n_index] += c_ref_acc * scale;
+          kfsum += scale * ksum;
         }
-        c_ref[m_index * n() + n_index] -= (quantization_params[m_index].zero_point * ksum);
-        c_ref[m_index * n() + n_index] *= quantization_params[m_index].inv_scale * kernel_scale[n_index];
-        c_ref[m_index * n() + n_index] += bias[n_index];
+        c_ref[m_index * n() + n_index] -= (quantization_params[m_index].zero_point * kfsum);
+        c_ref[m_index * n() + n_index] *= quantization_params[m_index].inv_scale; // * kernel_scale[n_index];
+        // c_ref[m_index * n() + n_index] += bias[n_index]; // TODO no bias
       }
     }
 

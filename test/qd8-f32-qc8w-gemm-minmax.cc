@@ -24838,7 +24838,7 @@ TEST(QD8_F32_QC8W_GEMM_MINMAX_1X2__SCALAR_BL, k_eq_1) {
     .kr(1)
     .sr(1)
     .m(1)
-    .n(8)
+    .n(16)
     .k(16)
     .bl(4)
     .Test(xnn_qd8_f32_qc8w_bl_gemm_minmax_ukernel_1x2__scalar, xnn_init_f32_minmax_scalar_params, xnn_pack_qs8_gemm_bl_goi_w);

@@ -135,26 +135,25 @@ void xnn_qd8_f32_qc8w_bl_gemm_minmax_ukernel_1x2__scalar(
 
   size_t nc_block = 0;
   do {
-    printf("\nnc_block=%zu, w: %p\n", nc_block++, w);
+    // printf("\nnc_block=%zu, w: %p\n", nc_block++, w);
     const int32_t vksum0 = unaligned_indexed_load_s32(w, 0);
     const int32_t vksum1 = unaligned_indexed_load_s32(w, 1);
-    const int32_t vinput_zero_point0 = quantization_params[0].zero_point;
-
-    printf("w: %p, vksum0=%4d, vksum1:%4d\n", (void*)w, vksum0, vksum1);
-
-    int32_t vacc0x0 = vksum0 * vinput_zero_point0;
-    int32_t vacc0x1 = vksum1 * vinput_zero_point0;
     w = (const int32_t*) w + 2;
-
-    size_t n_blocks = kc / bl;
+    const int32_t vinput_zero_point0 = quantization_params[0].zero_point;
 
     float vout0x0 = 0.0f;
     float vout0x1 = 0.0f;
+
+    size_t n_blocks = kc / bl;
+
     for(size_t nb=0; nb<n_blocks; ++nb) {
+      int32_t vacc0x0 = 0;
+      int32_t vacc0x1 = 0;
       printf("\nnb=%zu, w: %p\n", nb, w);
       for(size_t k=0; k < bl; k += sizeof(int8_t)) {
         printf("k=%zu, w: %p\n", k, w);
         const int32_t va0 = (int32_t) *a0++;
+        printf("a0:%p, va0=%4d\n", (int8_t*)a0 - 1, va0);
 
         const int32_t vb0 = (int32_t) ((const int8_t*) w)[0];
         const int32_t vb1 = (int32_t) ((const int8_t*) w)[1];
@@ -164,6 +163,7 @@ void xnn_qd8_f32_qc8w_bl_gemm_minmax_ukernel_1x2__scalar(
         vacc0x0 += va0 * vb0;
         vacc0x1 += va0 * vb1;
       }
+      printf("int acc0x0: %d, acc0x1: %d\n", vacc0x0, vacc0x1);
       float vf0x0 = (float) vacc0x0;
       float vf0x1 = (float) vacc0x1;
 
@@ -177,9 +177,11 @@ void xnn_qd8_f32_qc8w_bl_gemm_minmax_ukernel_1x2__scalar(
       w = (const float*) w + 1;
       vf0x1 *= vfilter_output_scale1;
 
-      vout0x0 += vf0x0;
-      vout0x1 += vf0x1;
+      // HACK Fix it in packing
+      vout0x0 += vf0x0 + vinput_zero_point0 * vfilter_output_scale0 * vksum0 * (!nb ? 1 : 0);
+      vout0x1 += vf0x1 + vinput_zero_point0 * vfilter_output_scale1 * vksum1 * (!nb ? 1 : 0);
 
+      printf("acc0: %d, acc1: %d\n", vacc0x0, vacc0x1);
       vacc0x0 = 0;
       vacc0x1 = 0;
     }
