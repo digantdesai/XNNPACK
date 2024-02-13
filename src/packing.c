@@ -327,13 +327,14 @@ void xnn_pack_qs8_gemm_bl_goi_w(
   const int32_t* b,
   const float* scale,
   void* packed_weights,
-  size_t extra_bytes,
+  size_t extra_bytes_bl,
+  size_t extra_bytes_n,
   const struct xnn_qs8_packing_params* params)
 {
   // xnn_pack_qs8_gemm_goi_w(g, nc, kc, nr, kr, sr, k, b, scale, packed_weights, extra_bytes, params);
   // return;
-  printf("Running packing fn %s: g: %zu, nc: %zu, kc: %zu, nr: %zu, kr: %zu, sr: %zu, bl: %zu, k: %p, b: %p, scale: %p, packed_weights: %p, extra_bytes: %zu, params: %p\n",
-    __func__, g, nc, kc, nr, kr, sr, bl, k, b, scale, packed_weights, extra_bytes, params);
+  printf("Running packing fn %s: g: %zu, nc: %zu, kc: %zu, nr: %zu, kr: %zu, sr: %zu, bl: %zu, k: %p, b: %p, scale: %p, packed_weights: %p, extra_bytes_bl: %zu, extra_bytes_n: %zu, params: %p\n",
+    __func__, g, nc, kc, nr, kr, sr, bl, k, b, scale, packed_weights, extra_bytes_bl, extra_bytes_n, params);
   assert(g != 0);
   assert(nr >= sr);
   // assert(sr == 1); // TODO
@@ -347,10 +348,11 @@ void xnn_pack_qs8_gemm_bl_goi_w(
 
   const size_t skr = sr * kr;
   const size_t num_blocks = round_up_po2(kc, skr) / bl;
-  const uint32_t izp = (uint32_t) params->input_zero_point;
+  const int32_t izp = (int32_t) params->input_zero_point;
   do {
     for (size_t nr_block_start = 0; nr_block_start < nc; nr_block_start += nr) {
       const size_t nr_block_size = min(nc - nr_block_start, nr);
+      // TODO: move this at the end just before extra_bytes_n
       float* packed_b = (float*) packed_weights;
       if XNN_LIKELY(b != NULL) {
         for (size_t nr_block_offset = 0; nr_block_offset < nr_block_size; nr_block_offset++) {
@@ -382,7 +384,8 @@ void xnn_pack_qs8_gemm_bl_goi_w(
           printf("pack: ksum: %u\n", ksum);
 
           size_t block_index = kr_block_start / bl;
-          size_t scale_index = (nr_block_start  + nr_block_offset) * num_blocks + block_index;
+          size_t scale_index = (nr_block_start + nr_block_offset) * num_blocks + block_index;
+          printf("nc: %zu, nr: %zu, num_blocks; %zu, block_index: %zu, scale_index: %zu, scale: %p\n", nr_block_start, nr_block_offset, num_blocks, block_index, scale_index, scale);
           printf("pack: scale[%zu]: %f\n", scale_index, scale[scale_index]);
 
           printf("pack: orig: %f, update: %f, final: %f\n",
@@ -393,10 +396,11 @@ void xnn_pack_qs8_gemm_bl_goi_w(
           packed_weights = (int8_t*) packed_weights + kr;
         }
         if ((kr + kr_block_start) % bl == 0) {
-          packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes);
+          packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes_bl);
         }
         packed_weights = (int8_t*) packed_weights + (nr - nr_block_size) * kr;
       }
+      packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes_n);
     }
     k += nc * kc;
     if XNN_UNPREDICTABLE(b != NULL) {

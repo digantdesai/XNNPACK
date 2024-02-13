@@ -178,9 +178,8 @@ void xnn_qd8_f32_qc8w_bl_gemm_minmax_ukernel_1x2__scalar(
       w = (const float*) w + 1;
       vf0x1 *= vfilter_output_scale1;
 
-      // HACK Fix it in packing
-      vout0x0 += vf0x0; // + vinput_zero_point0 * vfilter_output_scale0 * vksum0 * (!nb ? 0 : 0);
-      vout0x1 += vf0x1; // + vinput_zero_point0 * vfilter_output_scale1 * vksum1 * (!nb ? 0 : 0);
+      vout0x0 += vf0x0;
+      vout0x1 += vf0x1;
 
       printf("acc0: %d, acc1: %d\n", vacc0x0, vacc0x1);
       vacc0x0 = 0;

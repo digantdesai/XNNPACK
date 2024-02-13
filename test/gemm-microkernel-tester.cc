@@ -1134,7 +1134,7 @@ void GemmMicrokernelTester::Test(
     // until runtime, set it to 1.
     const xnn_qs8_packing_params packing_params = { /*input_zero_point=*/1 };
     pack(/*g=*/1, n(), k(), nr(), kr(), sr(), bl(),
-      b.data(), /*bias=*/nullptr, /*scale=*/kernel_scale2d.data(), packed_w.data(), sizeof(float) * nr(), &packing_params);
+      b.data(), /*bias=*/nullptr, /*scale=*/kernel_scale2d.data(), packed_w.data(), sizeof(float) * nr(), 0, &packing_params);
     printf("Packed weights:\n");
     for(size_t i=0; i<packed_w.size(); ++i) {
       printf("%zu, %p, %d\n", i, packed_w.data() + i, (int32_t)packed_w.data()[i]);
