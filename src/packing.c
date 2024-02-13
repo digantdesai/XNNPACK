@@ -586,7 +586,8 @@ void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
   assert(2 * kr <= bl); // must be at least two kr to avoid back-to-back empty_bytes
 
   const size_t skr = sr * kr;
-  const uint32_t izp = (uint32_t) params->input_zero_point;
+  const size_t num_blocks = round_up_po2(kc, skr) / bl;
+  const int32_t izp = (int32_t) params->input_zero_point;
   do {
     size_t nr_block_start = 0;
     do {
@@ -608,7 +609,7 @@ void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
 
       for (size_t kr_block_start = 0; kr_block_start < round_up_po2(kc, skr * 2); kr_block_start += kr * 2) {
         for (size_t nr_block_offset = 0; nr_block_offset < nr_block_size; nr_block_offset++) {
-          uint32_t ksum = 0;
+          int32_t ksum = 0;
           for (size_t kr_block_offset = 0; kr_block_offset < kr; kr_block_offset++) {
             const size_t kc_idx = round_down_po2(kr_block_start, skr) + ((kr_block_start + kr_block_offset + nr_block_offset * kr) & (skr - 1));
             const size_t k_offset = (nr_block_start + nr_block_offset) * kc + kc_idx;
@@ -622,10 +623,24 @@ void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
               kv_hi = ((kh_offset & 1) ? (k[kh_offset >> 1] >> 4) : (k[kh_offset >> 1] & 0xF));
             }
             ksum += kv_lo + kv_hi - 16;  // subtract 2 zero points (8)
+            printf("kv_lo: %d (%d), kv_hi:%d (%d), update: %d, ksum after update: %d\n", kv_lo, kv_lo - 8, kv_hi, kv_hi - 8, kv_lo + kv_hi - 16, ksum);
             const uint8_t kv = (kv_lo | (kv_hi << 4)) ^ 0x88;
             ((uint8_t*) packed_weights)[kr_block_offset] = kv;
           }
-          unaligned_indexed_store_u32(packed_b, nr_block_offset, unaligned_indexed_load_u32(packed_b, nr_block_offset) - ksum * izp * 16);
+
+          size_t block_index = kr_block_start / bl;
+          size_t scale_index = (nr_block_start + nr_block_offset) * num_blocks + block_index;
+          printf("nc: %zu, nr: %zu, num_blocks; %zu, block_index: %zu, scale_index: %zu, scale: %f, %p\n", nr_block_start, nr_block_offset, num_blocks, block_index, scale_index, scale[scale_index], scale);
+          printf("pack: scale[%zu]: %f\n", scale_index, scale[scale_index]);
+          printf("pack: ksum: %d\n", ksum);
+
+          printf("pack: orig: %f, update: %f, final: %f\n",
+                unaligned_indexed_load_f32(packed_b, nr_block_offset),
+                (float) ksum * izp * scale[scale_index] * 16,
+                unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index] * 16);
+          unaligned_indexed_store_f32(packed_b, nr_block_offset, unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index] * 16);
+
+          // unaligned_indexed_store_u32(packed_b, nr_block_offset, unaligned_indexed_load_u32(packed_b, nr_block_offset) - ksum * izp * 16);
           packed_weights = (uint8_t*) packed_weights + kr;  // kr * 2 nibbles
         }
         if (((2 * kr) + kr_block_start) % bl == 0) {
