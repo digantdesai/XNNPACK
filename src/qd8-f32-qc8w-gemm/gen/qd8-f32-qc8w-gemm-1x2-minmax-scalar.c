@@ -135,9 +135,10 @@ void xnn_qd8_f32_qc8w_bl_gemm_minmax_ukernel_1x2__scalar(
 
   size_t nc_block = 0;
   do {
-    // printf("\nnc_block=%zu, w: %p\n", nc_block++, w);
-    const int32_t vksum0 = unaligned_indexed_load_s32(w, 0);
-    const int32_t vksum1 = unaligned_indexed_load_s32(w, 1);
+    printf("\nnc_block=%zu, w: %p\n", nc_block++, w);
+    const float vksum0 = unaligned_indexed_load_f32(w, 0);
+    const float vksum1 = unaligned_indexed_load_f32(w, 1);
+    printf("kernel: kfsum: 0: %f, 1: %f\n", vksum0, vksum1);
     w = (const int32_t*) w + 2;
     const int32_t vinput_zero_point0 = quantization_params[0].zero_point;
 
@@ -178,13 +179,17 @@ void xnn_qd8_f32_qc8w_bl_gemm_minmax_ukernel_1x2__scalar(
       vf0x1 *= vfilter_output_scale1;
 
       // HACK Fix it in packing
-      vout0x0 += vf0x0 + vinput_zero_point0 * vfilter_output_scale0 * vksum0 * (!nb ? 1 : 0);
-      vout0x1 += vf0x1 + vinput_zero_point0 * vfilter_output_scale1 * vksum1 * (!nb ? 1 : 0);
+      vout0x0 += vf0x0; // + vinput_zero_point0 * vfilter_output_scale0 * vksum0 * (!nb ? 0 : 0);
+      vout0x1 += vf0x1; // + vinput_zero_point0 * vfilter_output_scale1 * vksum1 * (!nb ? 0 : 0);
 
       printf("acc0: %d, acc1: %d\n", vacc0x0, vacc0x1);
       vacc0x0 = 0;
       vacc0x1 = 0;
     }
+
+    printf("vksum * izp: %f\n", (float) vinput_zero_point0 * vksum0);
+    vout0x0 += (float) vinput_zero_point0 * vksum0;
+    vout0x1 += (float) vinput_zero_point0 * vksum1;
 
     const float vinput_scale0 = quantization_params[0].inv_scale;
     vout0x0 *= vinput_scale0;

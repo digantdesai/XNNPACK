@@ -1125,7 +1125,7 @@ void GemmMicrokernelTester::Test(
     // until runtime, set it to 1.
     const xnn_qs8_packing_params packing_params = { /*input_zero_point=*/1 };
     pack(/*g=*/1, n(), k(), nr(), kr(), sr(), bl(),
-      b.data(), /*bias=*/nullptr, /*scale=*/nullptr, packed_w.data(), sizeof(float) * nr(), &packing_params);
+      b.data(), /*bias=*/nullptr, /*scale=*/kernel_scale2d.data(), packed_w.data(), sizeof(float) * nr(), &packing_params);
     printf("Packed weights:\n");
     for(size_t i=0; i<packed_w.size(); ++i) {
       printf("%zu, %p, %d\n", i, packed_w.data() + i, (int32_t)packed_w.data()[i]);
@@ -1179,10 +1179,11 @@ void GemmMicrokernelTester::Test(
           }
           size_t scale_index = n_index * num_blocks + bl_index;
           float scale = kernel_scale2d[scale_index];
-          printf("Ref int acc: %d\n", c_ref_acc);
+          printf("Ref int acc: %d, int ksum: %d\n", c_ref_acc, ksum);
           c_ref[m_index * n() + n_index] += c_ref_acc * scale;
           kfsum += scale * ksum;
         }
+        printf("Ref kfsum: %f, izp: %f\n", kfsum, quantization_params[m_index].zero_point);
         c_ref[m_index * n() + n_index] -= (quantization_params[m_index].zero_point * kfsum);
         c_ref[m_index * n() + n_index] *= quantization_params[m_index].inv_scale; // * kernel_scale[n_index];
         // c_ref[m_index * n() + n_index] += bias[n_index]; // TODO no bias

@@ -346,11 +346,12 @@ void xnn_pack_qs8_gemm_bl_goi_w(
   assert(bl <= round_up_po2(kc, kr));
 
   const size_t skr = sr * kr;
+  const size_t num_blocks = round_up_po2(kc, skr) / bl;
   const uint32_t izp = (uint32_t) params->input_zero_point;
   do {
     for (size_t nr_block_start = 0; nr_block_start < nc; nr_block_start += nr) {
       const size_t nr_block_size = min(nc - nr_block_start, nr);
-      int32_t* packed_b = (int32_t*) packed_weights;
+      float* packed_b = (float*) packed_weights;
       if XNN_LIKELY(b != NULL) {
         for (size_t nr_block_offset = 0; nr_block_offset < nr_block_size; nr_block_offset++) {
           unaligned_store_s32(packed_weights, b[nr_block_start + nr_block_offset]);
@@ -367,16 +368,28 @@ void xnn_pack_qs8_gemm_bl_goi_w(
 
       for (size_t kr_block_start = 0; kr_block_start < round_up_po2(kc, skr); kr_block_start += kr) {
         for (size_t nr_block_offset = 0; nr_block_offset < nr_block_size; nr_block_offset++) {
-          uint32_t ksum = 0;
+          int32_t ksum = 0;
           for (size_t kr_block_offset = 0; kr_block_offset < kr; kr_block_offset++) {
             const size_t kc_idx = round_down_po2(kr_block_start, skr) + ((kr_block_start + kr_block_offset + nr_block_offset * kr) & (skr - 1));
             if (kc_idx < kc) {
               const int8_t kv = k[(nr_block_start + nr_block_offset) * kc + kc_idx];
-              ksum += (uint32_t) kv;
+              printf("before: %u, kv: %u, after: ", ksum, kv);
+              ksum += (int32_t) kv;
+              printf("%u\n", ksum);
               ((int8_t*) packed_weights)[kr_block_offset] = kv;
             }
           }
-          unaligned_indexed_store_u32(packed_b, nr_block_offset, unaligned_indexed_load_u32(packed_b, nr_block_offset) - ksum * izp);
+          printf("pack: ksum: %u\n", ksum);
+
+          size_t block_index = kr_block_start / bl;
+          size_t scale_index = (nr_block_start  + nr_block_offset) * num_blocks + block_index;
+          printf("pack: scale[%zu]: %f\n", scale_index, scale[scale_index]);
+
+          printf("pack: orig: %f, update: %f, final: %f\n",
+                unaligned_indexed_load_f32(packed_b, nr_block_offset),
+                (float) ksum * izp * scale[scale_index],
+                unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index]);
+          unaligned_indexed_store_f32(packed_b, nr_block_offset, unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index]);
           packed_weights = (int8_t*) packed_weights + kr;
         }
         if ((kr + kr_block_start) % bl == 0) {
