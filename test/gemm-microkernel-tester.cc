@@ -1108,14 +1108,23 @@ void GemmMicrokernelTester::Test(
     // std::generate(bias.begin(), bias.end(), std::ref(f32rng));
     std::fill(bias.begin(), bias.end(), 0);
     // std::generate(kernel_scale.begin(), kernel_scale.end(), std::ref(scalerng));
-    float kScale = 1.5;
-    std::fill(kernel_scale.begin(), kernel_scale.end(), kScale);
+    // float kScale = 1.5;
+    // std::fill(kernel_scale.begin(), kernel_scale.end(), kScale);
     // std::fill(kernel_scale2d.begin(), kernel_scale2d.end(), kScale);
+    // for (size_t oc=0; oc<n(); ++oc){
+    //   for(size_t ic=0; ic < packed_k()/bl(); ++ic ) {
+    //     kernel_scale2d[oc*packed_k()/bl() + ic] = kScale;
+    //   }
+    // }
+    std::generate(kernel_scale2d.begin(), kernel_scale2d.end(), std::ref(scalerng));
     for (size_t oc=0; oc<n(); ++oc){
       for(size_t ic=0; ic < packed_k()/bl(); ++ic ) {
-        kernel_scale2d[oc*packed_k()/bl() + ic] = kScale;
+        size_t scale_index = oc * packed_k() / bl() + ic;
+        float scale = kernel_scale2d[scale_index];
+        printf("scale[%zu][%zu]: scale[%zu] = %f (0x%u)\n", oc, ic, scale_index, scale, fp32_to_bits(scale));
       }
     }
+
 
 
     std::fill(c.begin(), c.end(), nanf(""));
