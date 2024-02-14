@@ -247,6 +247,7 @@ typedef void (*xnn_pack_qs8_qc4w_gemm_bl_fn)(
   const float* scale,
   void* packed_weights,
   size_t extra_bytes_bl,
+  size_t extra_bytes_n,
   const struct xnn_qs8_qc4w_packing_params* params);
 
 XNN_INTERNAL void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
@@ -261,7 +262,8 @@ XNN_INTERNAL void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
   const int32_t* bias,
   const float* scale,
   void* packed_weights,
-  size_t extra_bytes,
+  size_t extra_bytes_bl,
+  size_t extra_bytes_n,
   const struct xnn_qs8_qc4w_packing_params* params);
 
 typedef void (*xnn_pack_f32_qc4w_gemm_fn)(

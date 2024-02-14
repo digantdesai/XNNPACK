@@ -565,7 +565,8 @@ void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
   const int32_t* b,
   const float* scale,
   void* packed_weights,
-  size_t extra_bytes,
+  size_t extra_bytes_bl,
+  size_t extra_bytes_n,
   const struct xnn_qs8_qc4w_packing_params* params)
 {
   assert(g != 0);
@@ -642,16 +643,15 @@ void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
                 (float) ksum * izp * scale[scale_index] * 16,
                 unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index] * 16);
           unaligned_indexed_store_f32(packed_b, nr_block_offset, unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index] * 16);
-
-          // unaligned_indexed_store_u32(packed_b, nr_block_offset, unaligned_indexed_load_u32(packed_b, nr_block_offset) - ksum * izp * 16);
           packed_weights = (uint8_t*) packed_weights + kr;  // kr * 2 nibbles
         }
         if (((2 * kr) + kr_block_start) % bl == 0) {
-          packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes);
+          packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes_bl);
         }
 
         packed_weights = (uint8_t*) packed_weights + (nr - nr_block_size) * kr;  // skip NR remainder
       }
+      packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes_n);
       nr_block_start += nr;
     } while (nr_block_start < nc);
     k += nc * kc;  // kc * 2 nibbles
