@@ -23672,10 +23672,25 @@ TEST(QD8_F32_QC4W_GEMM_MINMAX_1X2__SCALAR, k_eq_2) {
     .sr(1)
     .m(1)
     .n(2)
-    .k(2)
+    .k(4)
     .b_zero_point(8)
     .Test(xnn_qd8_f32_qc4w_gemm_minmax_ukernel_1x2__scalar, xnn_init_f32_qc4w_minmax_scalar_params, xnn_pack_qs8_qc4w_gemm_goi_w);
 }
+
+TEST(QD8_F32_QC4W_GEMM_MINMAX_1X2__SCALAR_BL, k_eq_2) {
+  GemmMicrokernelTester()
+    .mr(1)
+    .nr(2)
+    .kr(1)
+    .sr(1)
+    .m(1)
+    .n(2)
+    .k(4)
+    .bl(4)
+    .b_zero_point(8)
+    .Test(xnn_qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x2__scalar, xnn_init_f32_qc4w_minmax_scalar_params, xnn_pack_qs8_qc4w_gemm_bl_goi_w);
+}
+
 
 TEST(QD8_F32_QC4W_GEMM_MINMAX_1X2__SCALAR, strided_cn) {
   GemmMicrokernelTester()
@@ -23684,7 +23699,7 @@ TEST(QD8_F32_QC4W_GEMM_MINMAX_1X2__SCALAR, strided_cn) {
     .kr(1)
     .sr(1)
     .m(1)
-    .n(2)
+    .n(1)
     .k(2)
     .cn_stride(5)
     .b_zero_point(8)

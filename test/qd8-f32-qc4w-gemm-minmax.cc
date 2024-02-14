@@ -23151,7 +23151,6 @@ TEST(QD8_F32_QC4W_GEMM_MINMAX_1X1__SCALAR, strided_cm) {
     .Test(xnn_qd8_f32_qc4w_gemm_minmax_ukernel_1x1__scalar, xnn_init_f32_qc4w_minmax_scalar_params, xnn_pack_qs8_qc4w_gemm_goi_w);
 }
 
-
 TEST(QD8_F32_QC4W_GEMM_MINMAX_2X2__SCALAR, k_eq_2) {
   GemmMicrokernelTester()
     .mr(2)

@@ -623,7 +623,10 @@ void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
               kv_hi = ((kh_offset & 1) ? (k[kh_offset >> 1] >> 4) : (k[kh_offset >> 1] & 0xF));
             }
             ksum += kv_lo + kv_hi - 16;  // subtract 2 zero points (8)
-            printf("kv_lo: %d (%d), kv_hi:%d (%d), update: %d, ksum after update: %d\n", kv_lo, kv_lo - 8, kv_hi, kv_hi - 8, kv_lo + kv_hi - 16, ksum);
+            printf("kv_hi: %d (%d, %x), kv_lo:%d (%d, %x), update: %d, ksum after update: %d\n",
+              kv_hi, kv_hi - 8, kv_hi ^ 0x8,
+              kv_lo, kv_lo - 8, kv_lo ^ 0x8,
+              kv_lo + kv_hi - 16, ksum);
             const uint8_t kv = (kv_lo | (kv_hi << 4)) ^ 0x88;
             ((uint8_t*) packed_weights)[kr_block_offset] = kv;
           }
