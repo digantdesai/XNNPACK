@@ -1655,9 +1655,9 @@ void GemmMicrokernelTester::Test(
           int32_t ksum = 0;
           int32_t c_ref_acc = 0;
           for (size_t kr_index = 0; kr_index < bl(); kr_index++) {
-            const size_t k_index = bl_index * num_blocks + kr_index;
+            const size_t k_index =  bl_index * bl() + kr_index;
             const size_t nb_index = (n_index * k2 + k_index) / 2;
-            printf("Ref bl_index: %zu, kr_index: %zu, k_index: %zu, nb_index: %zu || ", bl_index, kr_index, k_index, nb_index);
+            printf("Ref bl_index: %zu, kr_index: %zu, k_index: %zu, n_index: %zu, nb_index: %zu || ", bl_index, kr_index, k_index, nb_index);
             const int32_t bv = int32_t((k_index % 2 == 0) ? (b[nb_index] & UINT8_C(0xF)) : (b[nb_index] >> 4)) - b_zero_point();
             ksum += bv;
             c_ref_acc += int32_t(a[m_index * a_stride() + k_index]) * int32_t(bv);
