@@ -200,11 +200,6 @@ TEST(PACK_QD8_F32_QC4W_GEMM_GOI_W, bl_eq_kc) {
     /*scale=*/ scale.data(),
     /*packed_weight=*/ packed_weights.data() + start_offset);
 
-  for(size_t i=0; i<packed_weights.size(); ++i) {
-      printf("%zu, %p, %x\n", i, packed_weights.data() + i, (int32_t)(packed_weights.data()[i]));
-  }
-  printf("---");
-
   const std::vector<uint8_t> expected = {
     // kscaledsum
     0x78, 0x66, 0xd5, 0xc7, // -1 * 853.6010 * (sum(-8..+7) = -109260.9297 = 0xc7d56678
@@ -240,7 +235,6 @@ TEST(PACK_QD8_F32_QC4W_GEMM_GOI_W, bl_lt_kc) {
     + k_num_blocks * round_up(nc, nr) * extra_bytes_bl + round_up(nc, nr) * extra_bytes_n);
   std::vector<float> scale(nc * k_num_blocks, 0);
   std::fill(scale.begin(), scale.end(), 853.6010);
-  printf("scale.size: %zu, %p\n", scale.size(), scale.data());
 
 
   auto a = xnn_qs8_qc4w_packing_params{ -1, 0x8 };
@@ -460,11 +454,6 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kr) {
   xnn_pack_qs8_gemm_bl_goi_w(g, nc, kc, nr, kr, sr, bl,
     k.data(), b.data(), /*scale=*/scale.data(), packed_weights.data(), extra_bytes_bl * nr, extra_bytes_n * nr, /*params=*/&a);
 
-  for(size_t i=0; i<packed_weights.size(); ++i) {
-      printf("%zu, %p, %f\n", i, packed_weights.data() + i, (float)(packed_weights.data()[i]));
-  }
-  printf("---");
-
   size_t k_stride = round_up_po2(kc, kr * sr);
   size_t k_bytes = k_stride * nr;
   size_t bias_bytes = sizeof(int32_t) * nr;
@@ -487,11 +476,6 @@ TEST(PACK_QD8_F32_QC8W_GEMM_GOI_W, bl_eq_kr) {
     /*stride_offset=*/ 0,
     /*scale=*/ scale.data(),
     /*packed_weight=*/ packed_weights.data() + start_offset);
-
-  for(size_t i=0; i<packed_weights.size(); ++i) {
-      printf("%zu, %p, %d\n", i, packed_weights.data() + i, (int32_t)(packed_weights.data()[i]));
-  }
-  printf("---");
 
   const std::vector<int8_t> expected = {
     // nc == 0, 1, 2, 3

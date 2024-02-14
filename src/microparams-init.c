@@ -879,7 +879,6 @@ void xnn_init_qs8_qc8w_scale_fp32_params(
   const float scale[XNN_MIN_ELEMENTS(1)],
   void* packed_w)
 {
-  printf("Running: %s\n", __func__);
   const size_t tiled_channels = round_down_po2(channels, channels_tile);
   size_t tile_start = 0;
   for (; tile_start < tiled_channels; tile_start += channels_tile) {
@@ -944,10 +943,6 @@ void xnn_init_qs8_qc8w_bl_scale_fp32_params(
   const float scale[XNN_MIN_ELEMENTS(1)],
   void* packed_w)
 {
-  // xnn_init_qs8_qc8w_scale_fp32_params(channels, channels_tile, channels_subtile, stride, substride, stride_offset, scale, packed_w);
-  // return;
-
-  printf("Running: %s\n", __func__);
   void* packed_w_saved = packed_w;
   for (size_t block_start = 0; block_start < num_blocks; block_start++) {
     packed_w = packed_w_saved + block_start * block_stride;

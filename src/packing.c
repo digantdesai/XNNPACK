@@ -18,8 +18,6 @@
 #include <xnnpack/pack.h>
 #include <xnnpack/unaligned.h>
 
-#include <stdio.h>
-
 void xnn_pack_f32_gemm_goi_w(
   size_t g,
   size_t nc,
@@ -264,7 +262,6 @@ void xnn_pack_qs8_gemm_goi_w(
   size_t extra_bytes,
   const struct xnn_qs8_packing_params* params)
 {
-  printf("Running %s\n", __func__);
   assert(g != 0);
   assert(nr >= sr);
   assert(k != NULL);
@@ -331,13 +328,9 @@ void xnn_pack_qs8_gemm_bl_goi_w(
   size_t extra_bytes_n,
   const struct xnn_qs8_packing_params* params)
 {
-  // xnn_pack_qs8_gemm_goi_w(g, nc, kc, nr, kr, sr, k, b, scale, packed_weights, extra_bytes, params);
-  // return;
-  printf("Running packing fn %s: g: %zu, nc: %zu, kc: %zu, nr: %zu, kr: %zu, sr: %zu, bl: %zu, k: %p, b: %p, scale: %p, packed_weights: %p, extra_bytes_bl: %zu, extra_bytes_n: %zu, params: %p\n",
-    __func__, g, nc, kc, nr, kr, sr, bl, k, b, scale, packed_weights, extra_bytes_bl, extra_bytes_n, params);
   assert(g != 0);
   assert(nr >= sr);
-  // assert(sr == 1); // TODO
+  assert(sr == 1); // TODO - Add support for sr != 1 for blockwise
   assert(k != NULL);
   assert(packed_weights != NULL);
   assert(bl != 0);
@@ -352,7 +345,6 @@ void xnn_pack_qs8_gemm_bl_goi_w(
   do {
     for (size_t nr_block_start = 0; nr_block_start < nc; nr_block_start += nr) {
       const size_t nr_block_size = min(nc - nr_block_start, nr);
-      // TODO: move this at the end just before extra_bytes_n
       float* packed_b = (float*) packed_weights;
       if XNN_LIKELY(b != NULL) {
         for (size_t nr_block_offset = 0; nr_block_offset < nr_block_size; nr_block_offset++) {
@@ -375,23 +367,12 @@ void xnn_pack_qs8_gemm_bl_goi_w(
             const size_t kc_idx = round_down_po2(kr_block_start, skr) + ((kr_block_start + kr_block_offset + nr_block_offset * kr) & (skr - 1));
             if (kc_idx < kc) {
               const int8_t kv = k[(nr_block_start + nr_block_offset) * kc + kc_idx];
-              printf("before: %u, kv: %u, after: ", ksum, kv);
               ksum += (int32_t) kv;
-              printf("%u\n", ksum);
               ((int8_t*) packed_weights)[kr_block_offset] = kv;
             }
           }
-          printf("pack: ksum: %u\n", ksum);
-
           size_t block_index = kr_block_start / bl;
           size_t scale_index = (nr_block_start + nr_block_offset) * num_blocks + block_index;
-          printf("nc: %zu, nr: %zu, num_blocks; %zu, block_index: %zu, scale_index: %zu, scale: %p\n", nr_block_start, nr_block_offset, num_blocks, block_index, scale_index, scale);
-          printf("pack: scale[%zu]: %f\n", scale_index, scale[scale_index]);
-
-          printf("pack: orig: %f, update: %f, final: %f\n",
-                unaligned_indexed_load_f32(packed_b, nr_block_offset),
-                (float) ksum * izp * scale[scale_index],
-                unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index]);
           unaligned_indexed_store_f32(packed_b, nr_block_offset, unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index]);
           packed_weights = (int8_t*) packed_weights + kr;
         }
@@ -580,7 +561,7 @@ void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
   assert(params != NULL);
   assert(params->kernel_zero_point == 8);
   assert(bl != 0);
-  // assert(sr == 1); // TODO
+  assert(sr == 1); // TODO - Add support for sr != 1 for blockwise
   assert(round_up_po2(kc, kr) % bl == 0); // must be round number of blocks inside a column
   assert(bl % kr == 0); // must be round number of kr
   assert(bl <= round_up_po2(kc, kr));
@@ -624,24 +605,12 @@ void xnn_pack_qs8_qc4w_gemm_bl_goi_w(
               kv_hi = ((kh_offset & 1) ? (k[kh_offset >> 1] >> 4) : (k[kh_offset >> 1] & 0xF));
             }
             ksum += kv_lo + kv_hi - 16;  // subtract 2 zero points (8)
-            printf("kv_hi: %d (%d, %x), kv_lo:%d (%d, %x), update: %d, ksum after update: %d\n",
-              kv_hi, kv_hi - 8, kv_hi ^ 0x8,
-              kv_lo, kv_lo - 8, kv_lo ^ 0x8,
-              kv_lo + kv_hi - 16, ksum);
             const uint8_t kv = (kv_lo | (kv_hi << 4)) ^ 0x88;
             ((uint8_t*) packed_weights)[kr_block_offset] = kv;
           }
 
           size_t block_index = kr_block_start / bl;
           size_t scale_index = (nr_block_start + nr_block_offset) * num_blocks + block_index;
-          printf("nc: %zu, nr: %zu, num_blocks; %zu, block_index: %zu, scale_index: %zu, scale: %f, %p\n", nr_block_start, nr_block_offset, num_blocks, block_index, scale_index, scale[scale_index], scale);
-          printf("pack: scale[%zu]: %f\n", scale_index, scale[scale_index]);
-          printf("pack: ksum: %d\n", ksum);
-
-          printf("pack: orig: %f, update: %f, final: %f\n",
-                unaligned_indexed_load_f32(packed_b, nr_block_offset),
-                (float) ksum * izp * scale[scale_index] * 16,
-                unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index] * 16);
           unaligned_indexed_store_f32(packed_b, nr_block_offset, unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index] * 16);
           packed_weights = (uint8_t*) packed_weights + kr;  // kr * 2 nibbles
         }
