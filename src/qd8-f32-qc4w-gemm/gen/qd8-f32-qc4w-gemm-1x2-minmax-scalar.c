@@ -217,11 +217,12 @@ void xnn_qd8_f32_qc4w_bl_gemm_minmax_ukernel_1x2__scalar(
     vout0x1 *= vinput_scale0;
     printf("out0: %f, out1: %f, inv_scale: %f\n", vout0x0, vout0x1, vinput_scale0);
 
-    // const float vbias0 = unaligned_indexed_load_f32(w, 2);
-    // vout0x0 += vbias0;
-    // const float vbias1 = unaligned_indexed_load_f32(w, 3);
-    // vout0x1 += vbias1;
-    // w = (const float*) w + 4;
+    const float vbias0 = unaligned_indexed_load_f32(w, 0);
+    vout0x0 += vbias0;
+    const float vbias1 = unaligned_indexed_load_f32(w, 1);
+    vout0x1 += vbias1;
+    printf("w: %p, bias0: %f, bias1: %f\n", w, vbias0, vbias1);
+    w = (const float*) w + 2;
 
     const float voutput_min = params->scalar.min;
     vout0x0 = math_max_f32(vout0x0, voutput_min);
