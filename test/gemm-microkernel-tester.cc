@@ -1441,7 +1441,6 @@ void GemmMicrokernelTester::Test(
         c_ref[m_index * n() + n_index] -= (quantization_params[m_index].zero_point * ksum);
         c_ref[m_index * n() + n_index] *= quantization_params[m_index].inv_scale * kernel_scale[n_index];
         c_ref[m_index * n() + n_index] += bias[n_index];
-        printf("cref: %f\n", c_ref[m_index * n() + n_index]);
       }
     }
 
