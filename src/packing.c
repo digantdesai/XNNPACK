@@ -316,6 +316,84 @@ void xnn_pack_qs8_gemm_goi_w(
   } while (--g != 0);
 }
 
+void xnn_pack_qs8_gemm_bl_goi_w(
+  size_t g,
+  size_t nc,
+  size_t kc,
+  size_t nr,
+  size_t kr,
+  size_t sr,
+  size_t bl,
+  const int8_t* k,
+  const int32_t* b,
+  const float* scale,
+  void* packed_weights,
+  size_t extra_bytes_bl,
+  size_t extra_bytes_n,
+  const struct xnn_qs8_packing_params* params)
+{
+  assert(g != 0);
+  assert(nr >= sr);
+  assert(sr == 1); // TODO - Add support for sr != 1 for blockwise
+  assert(k != NULL);
+  assert(packed_weights != NULL);
+  assert(bl != 0);
+  assert(round_up_po2(kc, kr) % bl == 0); // must be round number of blocks inside a column
+  assert(bl % kr == 0); // must be round number of kr in a block
+  assert(kr <= bl);
+  assert(bl <= round_up_po2(kc, kr));
+
+  const size_t skr = sr * kr;
+  const size_t num_blocks = round_up_po2(kc, skr) / bl;
+  const int32_t izp = (int32_t) params->input_zero_point;
+  do {
+    for (size_t nr_block_start = 0; nr_block_start < nc; nr_block_start += nr) {
+      const size_t nr_block_size = min(nc - nr_block_start, nr);
+      float* packed_b = (float*) packed_weights;
+      if XNN_LIKELY(b != NULL) {
+        for (size_t nr_block_offset = 0; nr_block_offset < nr_block_size; nr_block_offset++) {
+          unaligned_store_s32(packed_weights, b[nr_block_start + nr_block_offset]);
+          packed_weights = (int32_t*) packed_weights + 1;
+        }
+      } else {
+        size_t n = nr_block_size;
+        do {
+          unaligned_store_s32(packed_weights, 0);
+          packed_weights = (int32_t*) packed_weights + 1;
+        } while (--n != 0);
+      }
+      packed_weights = (int32_t*) packed_weights + (nr - nr_block_size);
+
+      for (size_t kr_block_start = 0; kr_block_start < round_up_po2(kc, skr); kr_block_start += kr) {
+        for (size_t nr_block_offset = 0; nr_block_offset < nr_block_size; nr_block_offset++) {
+          int32_t ksum = 0;
+          for (size_t kr_block_offset = 0; kr_block_offset < kr; kr_block_offset++) {
+            const size_t kc_idx = round_down_po2(kr_block_start, skr) + ((kr_block_start + kr_block_offset + nr_block_offset * kr) & (skr - 1));
+            if (kc_idx < kc) {
+              const int8_t kv = k[(nr_block_start + nr_block_offset) * kc + kc_idx];
+              ksum += (int32_t) kv;
+              ((int8_t*) packed_weights)[kr_block_offset] = kv;
+            }
+          }
+          size_t block_index = kr_block_start / bl;
+          size_t scale_index = (nr_block_start + nr_block_offset) * num_blocks + block_index;
+          unaligned_indexed_store_f32(packed_b, nr_block_offset, unaligned_indexed_load_f32(packed_b, nr_block_offset) - (float) ksum * izp * scale[scale_index]);
+          packed_weights = (int8_t*) packed_weights + kr;
+        }
+        if ((kr + kr_block_start) % bl == 0) {
+          packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes_bl);
+        }
+        packed_weights = (int8_t*) packed_weights + (nr - nr_block_size) * kr;
+      }
+      packed_weights = (void*) ((uintptr_t) packed_weights + extra_bytes_n);
+    }
+    k += nc * kc;
+    if XNN_UNPREDICTABLE(b != NULL) {
+      b += nc;
+    }
+  } while (--g != 0);
+}
+
 void xnn_pack_qs8_to_qu8_gemm_goi_w(
   size_t g,
   size_t nc,
