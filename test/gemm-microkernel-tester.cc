@@ -1587,6 +1587,11 @@ void GemmMicrokernelTester::Test(
         (void*) start);
     }
 
+    // printf("Packed weights: nr: %zu, kr: %zu\n", nr(), kr());
+    // for(size_t i=0; i<packed_w.size(); ++i) {
+    //   printf("%i @ %p = %d\n", i, (uintptr_t)packed_w.data() + i, (int32_t)(packed_w[i]));
+    // }
+
     // Compute 32-bit results and output quantization arguments.
     std::fill(c_ref.begin(), c_ref.end(), 0);
     for (size_t m_index = 0; m_index < m(); m_index++) {

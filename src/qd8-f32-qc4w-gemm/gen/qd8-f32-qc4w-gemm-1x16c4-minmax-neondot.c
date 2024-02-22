@@ -14,6 +14,47 @@
 #include <xnnpack/gemm.h>
 #include <xnnpack/math.h>
 
+#include <stdio.h>
+
+#define PRINT_int8x16(reg)                                         \
+    do {                                                           \
+      printf("[%s;%d] %-20s --> ", __func__, __LINE__, #reg);      \
+      printf("[%d]: %d,",  0, (int32_t) vdupb_laneq_s8(reg,  0));  \
+      printf("[%d]: %d,",  1, (int32_t) vdupb_laneq_s8(reg,  1));  \
+      printf("[%d]: %d,",  2, (int32_t) vdupb_laneq_s8(reg,  2));  \
+      printf("[%d]: %d,",  3, (int32_t) vdupb_laneq_s8(reg,  3));  \
+      printf("[%d]: %d,",  4, (int32_t) vdupb_laneq_s8(reg,  4));  \
+      printf("[%d]: %d,",  5, (int32_t) vdupb_laneq_s8(reg,  5));  \
+      printf("[%d]: %d,",  6, (int32_t) vdupb_laneq_s8(reg,  6));  \
+      printf("[%d]: %d,",  7, (int32_t) vdupb_laneq_s8(reg,  7));  \
+      printf("[%d]: %d,",  8, (int32_t) vdupb_laneq_s8(reg,  8));  \
+      printf("[%d]: %d,",  9, (int32_t) vdupb_laneq_s8(reg,  9));  \
+      printf("[%d]: %d,", 10, (int32_t) vdupb_laneq_s8(reg, 10));  \
+      printf("[%d]: %d,", 11, (int32_t) vdupb_laneq_s8(reg, 11));  \
+      printf("[%d]: %d,", 12, (int32_t) vdupb_laneq_s8(reg, 12));  \
+      printf("[%d]: %d,", 13, (int32_t) vdupb_laneq_s8(reg, 13));  \
+      printf("[%d]: %d,", 14, (int32_t) vdupb_laneq_s8(reg, 14));  \
+      printf("[%d]: %d\n", 15, (int32_t) vdupb_laneq_s8(reg, 15)); \
+    } while(0);
+
+
+#define PRINT_int32x4(reg)                                    \
+    do {                                                      \
+      printf("[%s;%d] %-20s --> ", __func__, __LINE__, #reg); \
+      printf("[%d]: %6d,",  0, vdups_laneq_s32(reg, 0));      \
+      printf("[%d]: %6d,",  1, vdups_laneq_s32(reg, 1));      \
+      printf("[%d]: %6d,",  2, vdups_laneq_s32(reg, 2));      \
+      printf("[%d]: %6d\n", 3, vdups_laneq_s32(reg, 3));      \
+    } while(0);
+
+#define PRINT_float32x4(reg)                                  \
+    do {                                                      \
+      printf("[%s;%d] %-20s --> ", __func__, __LINE__, #reg); \
+      printf("[%d]: %6.4f,",  0, vdups_laneq_f32(reg, 0));    \
+      printf("[%d]: %6.4f,",  1, vdups_laneq_f32(reg, 1));    \
+      printf("[%d]: %6.4f,",  2, vdups_laneq_f32(reg, 2));    \
+      printf("[%d]: %6.4f\n", 3, vdups_laneq_f32(reg, 3));    \
+    } while(0);
 
 void xnn_qd8_f32_qc4w_gemm_minmax_ukernel_1x16c4__neondot(
     size_t mr,
