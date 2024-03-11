@@ -82,7 +82,7 @@ ENDIF()
 
 # --- [ Processor-specific options
 OPTION(XNNPACK_ENABLE_ARM_FP16_SCALAR "Build XNNPACK with ARM FP16 (FP16 data processing) scalar micro-kernels" OFF)
-OPTION(XNNPACK_ENABLE_ARM_FP16_VECTOR "Build XNNPACK with ARM FP16 (FP16 data processing) vector micro-kernels" OFF)
+OPTION(XNNPACK_ENABLE_ARM_FP16_VECTOR "Build XNNPACK with ARM FP16 (FP16 data processing) vector micro-kernels" ON)
 OPTION(XNNPACK_ENABLE_ARM_BF16 "Build XNNPACK with ARM BF16 (BFLOAT16) micro-kernels" OFF)
 OPTION(XNNPACK_ENABLE_ARM_DOTPROD "Build XNNPACK with ARM DotProd (integer dot product) micro-kernels" ON)
 OPTION(XNNPACK_ENABLE_ARM_I8MM "Build XNNPACK with ARM I8MM (8-bit integer matrix multiply accumulate) micro-kernels" OFF)
