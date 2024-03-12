@@ -40,6 +40,7 @@ static struct xnn_gemm_config f32_qc4w_gemm_config = {0};
 static struct xnn_gemm_config f32_qc8w_gemm_config = {0};
 static struct xnn_gemm_config qd8_f16_qc8w_gemm_config = {0};
 static struct xnn_gemm_config qd8_f16_qc4w_gemm_config = {0};
+static struct xnn_gemm_config qd8_f16_qb4w_gemm_config = {0};
 static struct xnn_gemm_config qd8_f32_qc4w_gemm_config = {0};
 static struct xnn_gemm_config qd8_f32_qb4w_gemm_config = {0};
 static struct xnn_gemm_config qd8_f32_qc8w_gemm_config = {0};
@@ -66,6 +67,7 @@ static struct xnn_gemm_config qu8_gemm_config = {0};
   static pthread_once_t init_guard_f32_qc8w_gemm = PTHREAD_ONCE_INIT;
   static pthread_once_t init_guard_qd8_f16_qc4w_gemm = PTHREAD_ONCE_INIT;
   static pthread_once_t init_guard_qd8_f16_qc8w_gemm = PTHREAD_ONCE_INIT;
+  static pthread_once_t init_guard_qd8_f16_qb4w_gemm = PTHREAD_ONCE_INIT;
   static pthread_once_t init_guard_qd8_f32_qc4w_gemm = PTHREAD_ONCE_INIT;
   static pthread_once_t init_guard_qd8_f32_qb4w_gemm = PTHREAD_ONCE_INIT;
   static pthread_once_t init_guard_qd8_f32_qc8w_gemm = PTHREAD_ONCE_INIT;
@@ -1929,6 +1931,22 @@ static void init_qd8_f32_qc4w_gemm_config(void) {
     qd8_f32_qc4w_gemm_config.mr = 4;
     qd8_f32_qc4w_gemm_config.nr = 4;
     qd8_f32_qc4w_gemm_config.planes = 2;
+  #endif
+}
+
+static void init_qd8_f16_qb4w_gemm_config(void) {
+  // TODO more kernels
+  #if XNN_ARCH_ARM64 && XNN_ENABLE_ARM_DOTPROD
+    qd8_f16_qb4w_gemm_config.minmax.dqgemm_bl[XNN_MR_TO_INDEX(1)] = xnn_init_hmp_dqgemm_bl_ukernel((xnn_dqgemm_bl_ukernel_fn) xnn_qd8_f16_qb4w_gemm_minmax_ukernel_1x8c4__neondot);
+    qd8_f16_qb4w_gemm_config.minmax.dqgemm_bl[XNN_MR_TO_INDEX(4)] = xnn_init_hmp_dqgemm_bl_ukernel((xnn_dqgemm_bl_ukernel_fn) xnn_qd8_f16_qb4w_gemm_minmax_ukernel_4x8c4__neondot);
+    qd8_f16_qb4w_gemm_config.init.f16_qc4w = xnn_init_f16_qc4w_minmax_scalar_params;
+    qd8_f16_qb4w_gemm_config.pack_gemm_goi_bl = (xnn_packw_gemm_goi_bl_ukernel_fn) xnn_pack_qs8_qc4w_gemm_bl_goi_w;
+    qd8_f16_qb4w_gemm_config.mr = 4;
+    qd8_f16_qb4w_gemm_config.nr = 8;
+    qd8_f16_qb4w_gemm_config.log2_kr = 2;
+    qd8_f16_qb4w_gemm_config.planes = 2;
+  #else
+  #error "Unsupported architecture for QD8 F16 QB4W GEMM, only arm64 is supported at this time"
   #endif
 }
 
@@ -4326,6 +4344,20 @@ struct xnn_gemm_config* xnn_init_qd8_f32_qb4w_gemm_config() {
     pthread_once(&init_guard_qd8_f32_qb4w_gemm, &init_qd8_f32_qb4w_gemm_config);
   #endif
   return &qd8_f32_qb4w_gemm_config;
+}
+
+struct xnn_gemm_config* xnn_init_qd8_f16_qb4w_gemm_config() {
+  const struct xnn_hardware_config* hardware_config = xnn_init_hardware_config();
+  if (hardware_config == NULL) {
+    return NULL;
+  }
+  #if XNN_PLATFORM_WINDOWS
+    // TODO Add support for Windows init
+    // InitOnceExecuteOnce(&init_guard_qd8_f16_qc4w_gemm, &init_qd8_f16_qc4w_gemm_config_windows, NULL, NULL);
+  #else
+    pthread_once(&init_guard_qd8_f16_qb4w_gemm, &init_qd8_f16_qb4w_gemm_config);
+  #endif
+  return &qd8_f16_qb4w_gemm_config;
 }
 
 struct xnn_gemm_config* xnn_init_qd8_f32_qc8w_gemm_config() {
