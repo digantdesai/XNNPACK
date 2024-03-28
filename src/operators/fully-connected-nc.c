@@ -28,6 +28,7 @@
 #include <xnnpack/pack.h>
 #include <xnnpack/params.h>
 
+#include <stdio.h>
 
 static enum xnn_status create_fully_connected_nc(
     size_t input_channels,
@@ -702,6 +703,10 @@ enum xnn_status xnn_create_fully_connected_nc_qd8_f32_qb4w(
 
   size_t aligned_total_weights_size = round_up_po2(packed_weights_size, XNN_ALLOCATION_ALIGNMENT);
 
+  printf("XNNPACK: input_channels: %zu, output_channels: %zu, k_stride: %zu, n_stride: %zu, block_scale_bytes: %zu, num_blocks: %zu, block_size: %zu\n",
+    input_channels, output_channels, k_stride, n_stride, block_scale_bytes, num_blocks, block_size);
+  printf("XNNPACK: packed_weights_size: %zu, aligned_total_weights_size: %zu\n", packed_weights_size, aligned_total_weights_size);
+
   uint32_t cache_seed = output_channels ^ input_channels ^ nr ^ kr ^ sr ^ sizeof(float) ^ xnn_operator_type_fully_connected_nc_qd8_f32_qb4w;
   if (flags & XNN_FLAG_TRANSPOSE_WEIGHTS) {
     cache_seed = ~cache_seed;
@@ -1001,6 +1006,7 @@ enum xnn_status xnn_create_fully_connected_nc_qd8_f16_qb4w(
     n_stride * (sizeof(float) + k_stride + sizeof(float) + block_scale_bytes);
 
   size_t aligned_total_weights_size = round_up_po2(packed_weights_size, XNN_ALLOCATION_ALIGNMENT);
+  printf("packed_weights_size: %zu, aligned_total_weights_size: %zu\n", packed_weights_size, aligned_total_weights_size);
 
   uint32_t cache_seed = output_channels ^ input_channels ^ nr ^ kr ^ sr ^ sizeof(float) ^ xnn_operator_type_fully_connected_nc_qd8_f16_qb4w;
   if (flags & XNN_FLAG_TRANSPOSE_WEIGHTS) {

@@ -529,7 +529,8 @@ class FullyConnectedOperatorTester {
           internal_weights_cache = (struct xnn_internal_weights_cache*) weights_cache->context;
         }
       }
-
+      printf("App: kernel.size() : %zu (ic: %zu, oc: %zu, bl: %zu), ", kernel.size(), input_channels(), output_channels(), block_size());
+      printf("scales.size(): %zu\n", kernel_scale2d.size());
       const xnn_status status = xnn_create_fully_connected_nc_qd8_f32_qb4w(
           input_channels(), output_channels(),
           input_stride(), output_stride(),
