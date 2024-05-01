@@ -30319,3 +30319,4 @@ void xnn_xx_transposev_ukernel__1x1_scalar_memcpy(
     block_width -= 1;
   } while (block_width != 0);
 }
+
