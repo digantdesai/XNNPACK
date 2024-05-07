@@ -54,6 +54,7 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_1x2__scalar(
     for (size_t nb=0; nb<n_blocks; ++nb){
       int32_t vacc0x0 = 0;
       int32_t vacc0x1 = 0;
+
       for (size_t k=bl; k >= 2 * sizeof(uint8_t); k -= 2 * sizeof(uint8_t)) {
         const int32_t va0c0 = (int32_t) a0[0];
         const int32_t va0c1 = (int32_t) a0[1];
@@ -73,13 +74,13 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_1x2__scalar(
         vacc0x0 += va0c1 * vb0c1;
         vacc0x1 += va0c1 * vb1c1;
       }
+
       float vf0x0 = vacc0x0;
       float vf0x1 = vacc0x1;
 
       const float vfilter_output_scale0 = unaligned_indexed_load_f32(w, 0);
       w = (const float*) w + 1;
       vf0x0 *= vfilter_output_scale0;
-
       const float vfilter_output_scale1 = unaligned_indexed_load_f32(w, 0);
       w = (const float*) w + 1;
       vf0x1 *= vfilter_output_scale1;
@@ -120,7 +121,8 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_1x2__scalar(
       nc -= 2;
     } else {
       if (nc & 1) {
-        c0[0] = fp16_ieee_from_fp32_value(vout0x0);
+          c0[0] = fp16_ieee_from_fp32_value(vout0x0);
+          c0 += 1;
       }
 
       nc = 0;

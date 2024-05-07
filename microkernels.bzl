@@ -5927,6 +5927,7 @@ ALL_SCALAR_MICROKERNEL_SRCS = [
     "src/math/u64-sqrt-scalar-cvtu64-sqrt-llrint.c",
     "src/qd8-f16-qb4w-gemm/gen/qd8-f16-qb4w-gemm-1x2-minmax-scalar.c",
     "src/qd8-f16-qb4w-gemm/gen/qd8-f16-qb4w-gemm-1x4-minmax-scalar.c",
+    "src/qd8-f16-qb4w-gemm/gen/qd8-f16-qb4w-gemm-1x8-minmax-scalar.c",
     "src/qd8-f32-qb4w-gemm/gen/qd8-f32-qb4w-gemm-1x2-minmax-scalar.c",
     "src/qd8-f32-qc4w-gemm/gen/qd8-f32-qc4w-gemm-1x1-minmax-scalar.c",
     "src/qd8-f32-qc4w-gemm/gen/qd8-f32-qc4w-gemm-1x2-minmax-scalar.c",

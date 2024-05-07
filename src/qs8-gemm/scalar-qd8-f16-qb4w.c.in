@@ -11,7 +11,7 @@ $if VARIANT == "LRINTF":
 #include <xnnpack/gemm.h>
 #include <xnnpack/math.h>
 #include <xnnpack/unaligned.h>
-#include <fp16.h>
+#include <fp16/fp16.h>
 
 
 $DATATYPE_SPEC = {"QB4_F16": "qd8_f16_qb4w"}[DATATYPE]
@@ -46,88 +46,91 @@ void xnn_${DATATYPE_SPEC}_gemm_minmax_ukernel_${MR}x${NR}__scalar(
 
   kc = round_up_po2(kc, 2);
   do {
-    const float vksum0 = unaligned_indexed_load_f32(w, 0);
-    const float vksum1 = unaligned_indexed_load_f32(w, 1);
-    w = (const float*) w + 2;
+    $for N in range(NR):
+        const float vksum${N} = unaligned_indexed_load_f32(w, ${N});
+    w = (const float*) w + ${NR};
 
     const int32_t vinput_zero_point0 = quantization_params[0].zero_point;
 
-    float vout0x0 = (float) vinput_zero_point0 * vksum0;
-    float vout0x1 = (float) vinput_zero_point0 * vksum1;
+    $for N in range(NR):
+        float vout0x${N} = (float) vinput_zero_point0 * vksum${N};
 
     size_t n_blocks = kc / bl;
 
     for (size_t nb=0; nb<n_blocks; ++nb){
-      int32_t vacc0x0 = 0;
-      int32_t vacc0x1 = 0;
+      $for N in range(NR):
+        int32_t vacc0x${N} = 0;
+
       for (size_t k=bl; k >= 2 * sizeof(uint8_t); k -= 2 * sizeof(uint8_t)) {
         const int32_t va0c0 = (int32_t) a0[0];
         const int32_t va0c1 = (int32_t) a0[1];
         a0 += 2;
 
-        const uint8_t vbi0 = ((const uint8_t*) w)[0];
-        const uint8_t vbi1 = ((const uint8_t*) w)[1];
-        w = (const uint8_t*) w + 2;
+        $for N in range(NR):
+            const uint8_t vbi${N} = ((const uint8_t*) w)[${N}];
+        w = (const uint8_t*) w + ${NR};
 
-        const int32_t vb0c0 = (int32_t) (int8_t) (vbi0 << 4);
-        const int32_t vb0c1 = (int32_t) (int8_t) (vbi0 & 0xF0);
-        const int32_t vb1c0 = (int32_t) (int8_t) (vbi1 << 4);
-        const int32_t vb1c1 = (int32_t) (int8_t) (vbi1 & 0xF0);
+        $for N in range(NR):
+            const int32_t vb${N}c0 = (int32_t) (int8_t) (vbi${N} << 4);
+            const int32_t vb${N}c1 = (int32_t) (int8_t) (vbi${N} & 0xF0);
 
-        vacc0x0 += va0c0 * vb0c0;
-        vacc0x1 += va0c0 * vb1c0;
-        vacc0x0 += va0c1 * vb0c1;
-        vacc0x1 += va0c1 * vb1c1;
+        $for N in range(NR):
+            vacc0x${N} += va0c0 * vb${N}c0;
+        $for N in range(NR):
+            vacc0x${N} += va0c1 * vb${N}c1;
       }
-      float vf0x0 = vacc0x0;
-      float vf0x1 = vacc0x1;
 
-      const float vfilter_output_scale0 = unaligned_indexed_load_f32(w, 0);
-      w = (const float*) w + 1;
-      vf0x0 *= vfilter_output_scale0;
+      $for N in range(NR):
+        float vf0x${N} = vacc0x${N};
 
-      const float vfilter_output_scale1 = unaligned_indexed_load_f32(w, 0);
-      w = (const float*) w + 1;
-      vf0x1 *= vfilter_output_scale1;
+      $for N in range(NR):
+        const float vfilter_output_scale${N} = unaligned_indexed_load_f32(w, 0);
+        w = (const float*) w + 1;
+        vf0x${N} *= vfilter_output_scale${N};
 
-      vout0x0 += vf0x0;
-      vout0x1 += vf0x1;
+      $for N in range(NR):
+        vout0x${N} += vf0x${N};
     }
 
-    vout0x0 /= 16;
-    vout0x1 /= 16;
+    $for N in range(NR):
+        vout0x${N} /= 16;
 
     const float vinput_scale0 = quantization_params[0].inv_scale;
-    vout0x0 *= vinput_scale0;
-    vout0x1 *= vinput_scale0;
+    $for N in range(NR):
+        vout0x${N} *= vinput_scale0;
 
-    const float vbias0 = unaligned_indexed_load_f32(w, 0);
-    vout0x0 += vbias0;
-    const float vbias1 = unaligned_indexed_load_f32(w, 1);
-    vout0x1 += vbias1;
-    w = (const float*) w + 2;
+    $for N in range(NR):
+        const float vbias${N} = unaligned_indexed_load_f32(w, ${N});
+        vout0x${N} += vbias${N};
+    w = (const float*) w + ${NR};
 
     const float voutput_min = fp16_ieee_to_fp32_value(params->fp16arith.min);
-    vout0x0 = math_max_f32(vout0x0, voutput_min);
-    vout0x1 = math_max_f32(vout0x1, voutput_min);
+    $for N in range(NR):
+        vout0x${N} = math_max_f32(vout0x${N}, voutput_min);
 
     const float voutput_max = fp16_ieee_to_fp32_value(params->fp16arith.max);
-    vout0x0 = math_min_f32(vout0x0, voutput_max);
-    vout0x1 = math_min_f32(vout0x1, voutput_max);
+    $for N in range(NR):
+        vout0x${N} = math_min_f32(vout0x${N}, voutput_max);
 
-    if XNN_LIKELY(nc >= 2) {
-      c0[0] = fp16_ieee_from_fp32_value(vout0x0);
-      c0[1] = fp16_ieee_from_fp32_value(vout0x1);
+    if XNN_LIKELY(nc >= ${NR}) {
+      $for N in range(NR):
+        c0[${N}] = fp16_ieee_from_fp32_value(vout0x${N});
 
       a0 = (const int8_t*) ((uintptr_t) a0 - kc);
 
       c0 = (uint16_t*) ((uintptr_t) c0 + cn_stride);
 
-      nc -= 2;
+      nc -= ${NR};
     } else {
-      if (nc & 1) {
-        c0[0] = fp16_ieee_from_fp32_value(vout0x0);
-      }
+      $for LOG2N in reversed(range(NR.bit_length() - 1)):
+        if (nc & ${1 << LOG2N}) {
+            $for N in range(1 << LOG2N):
+                c0[${N}] = fp16_ieee_from_fp32_value(vout0x${N});
+            $if LOG2N != 0:
+                $for N in range(NR - (1 << LOG2N) - 1):
+                    vout0x${N} = vout0x${N + (1 << LOG2N)};
+            c0 += ${1 << LOG2N};
+        }
 
       nc = 0;
     }
