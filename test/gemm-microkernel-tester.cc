@@ -1400,7 +1400,6 @@ void GemmMicrokernelTester::Test(
 
     if (!can_use_optimized_packing) {
       // Fill in packed kernel scale
-      size_t num_blocks = packed_k() / bl();
       size_t stride =  nr() * (packed_k_bytes + /* scales= */ num_blocks * sizeof(float) + /* ksum= */ sizeof(float) + /* bias= */ sizeof(float));
       size_t block_stride = (bl() / 2 + sizeof(float)) * nr();
       size_t start_offset = nr() * (packed_k_bytes / num_blocks + sizeof(float));

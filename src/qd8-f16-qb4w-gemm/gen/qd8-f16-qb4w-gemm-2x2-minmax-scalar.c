@@ -27,21 +27,22 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x2__scalar(
     size_t cm_stride,
     size_t cn_stride,
     const union xnn_f16_qc4w_minmax_params params[XNN_MIN_ELEMENTS(1)],
-    const struct xnn_qd8_quantization_params quantization_params[XNN_MIN_ELEMENTS(1)]) XNN_OOB_READS
+    const struct xnn_qd8_quantization_params quantization_params[XNN_MIN_ELEMENTS(2)])
 {
   assert(mr != 0);
   assert(mr <= 2);
   assert(nc != 0);
   assert(kc != 0);
+    assert (bl != 0);
+    assert (bl <= kc);
 
-  const int8_t* a0 = a;
-  const int8_t* a1 = (const int8_t*) ((uintptr_t) a0 + a_stride);
-  uint16_t* c0 = (uint16_t*)c;
-  uint16_t* c1 = (uint16_t*) ((uintptr_t) c0 + cm_stride);
- 
-  if XNN_UNPREDICTABLE(mr < 2) {
-    a1 = a0;
-    c1 = c0;
+  const int8_t* a0 = (const int8_t*) ((uintptr_t) a + a_stride * 0);
+  uint16_t* c0 = (uint16_t*) ((uintptr_t) c + cm_stride * 0);
+  const int8_t* a1 = (const int8_t*) ((uintptr_t) a + a_stride * 1);
+  uint16_t* c1 = (uint16_t*) ((uintptr_t) c + cm_stride * 1);
+  if XNN_UNPREDICTABLE(mr < 1) {
+      a1 = a0;
+      c1 = c0;
   }
 
   kc = round_up_po2(kc, 2);
@@ -50,13 +51,13 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x2__scalar(
     const float vksum1 = unaligned_indexed_load_f32(w, 1);
     w = (const float*) w + 2;
 
-    const int32_t vinput_zero_point0 = quantization_params[0].zero_point;
-    const int32_t vinput_zero_point1 = quantization_params[1].zero_point;
+    const float vinput_zero_point0 = (float) quantization_params[0].zero_point;
+    const float vinput_zero_point1 = (float) quantization_params[1].zero_point;
 
-    float vout0x0 = (float) vinput_zero_point0 * vksum0;
-    float vout0x1 = (float) vinput_zero_point0 * vksum1;
-    float vout1x0 = (float) vinput_zero_point1 * vksum0;
-    float vout1x1 = (float) vinput_zero_point1 * vksum1;
+    float vout0x0 = vinput_zero_point0 * vksum0;
+    float vout0x1 = vinput_zero_point0 * vksum1;
+    float vout1x0 = vinput_zero_point1 * vksum0;
+    float vout1x1 = vinput_zero_point1 * vksum1;
 
     size_t n_blocks = kc / bl;
 
@@ -66,11 +67,10 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x2__scalar(
       int32_t vacc1x0 = 0;
       int32_t vacc1x1 = 0;
 
-      for (size_t k=bl; k >= 2 * sizeof(uint8_t); k -= 2 * sizeof(uint8_t)) {
+      for (size_t k=bl; k >= 2 * sizeof(int8_t); k -= 2 * sizeof(int8_t)) {
         const int32_t va0c0 = (int32_t) a0[0];
         const int32_t va0c1 = (int32_t) a0[1];
         a0 += 2;
-
         const int32_t va1c0 = (int32_t) a1[0];
         const int32_t va1c1 = (int32_t) a1[1];
         a1 += 2;
@@ -88,7 +88,6 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x2__scalar(
         vacc0x1 += va0c0 * vb1c0;
         vacc0x0 += va0c1 * vb0c1;
         vacc0x1 += va0c1 * vb1c1;
-
         vacc1x0 += va1c0 * vb0c0;
         vacc1x1 += va1c0 * vb1c0;
         vacc1x0 += va1c1 * vb0c1;
@@ -123,7 +122,6 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x2__scalar(
     const float vinput_scale0 = quantization_params[0].inv_scale;
     vout0x0 *= vinput_scale0;
     vout0x1 *= vinput_scale0;
-
     const float vinput_scale1 = quantization_params[1].inv_scale;
     vout1x0 *= vinput_scale1;
     vout1x1 *= vinput_scale1;
@@ -149,16 +147,16 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x2__scalar(
     vout1x1 = math_min_f32(vout1x1, voutput_max);
 
     if XNN_LIKELY(nc >= 2) {
-      c0[0] = fp16_ieee_from_fp32_value(vout0x0);
-      c0[1] = fp16_ieee_from_fp32_value(vout0x1);
-      c1[0] = fp16_ieee_from_fp32_value(vout1x0);
-      c1[1] = fp16_ieee_from_fp32_value(vout1x1);
+        c0[0] = fp16_ieee_from_fp32_value(vout0x0);
+        c0[1] = fp16_ieee_from_fp32_value(vout0x1);
+        c1[0] = fp16_ieee_from_fp32_value(vout1x0);
+        c1[1] = fp16_ieee_from_fp32_value(vout1x1);
 
-      a0 = (const int8_t*) ((uintptr_t) a0 - kc);
-      a1 = (const int8_t*) ((uintptr_t) a1 - kc);
+        a0 = (const int8_t*) ((uintptr_t) a0 - kc);
+        a1 = (const int8_t*) ((uintptr_t) a1 - kc);
 
-      c0 = (uint16_t*) ((uintptr_t) c0 + cn_stride);
-      c1 = (uint16_t*) ((uintptr_t) c1 + cn_stride);
+        c0 = (uint16_t*) ((uintptr_t) c0 + cn_stride);
+        c1 = (uint16_t*) ((uintptr_t) c1 + cn_stride);
 
       nc -= 2;
     } else {
