@@ -326,7 +326,7 @@ typedef void (*xnn_qd8_f32_qb4w_gemm_ukernel_fn)(
     const int8_t* a,
     size_t a_stride,
     const void* w,
-    float* c,
+    void* c,
     size_t cm_stride,
     size_t cn_stride,
     const union xnn_f32_qc4w_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)],
