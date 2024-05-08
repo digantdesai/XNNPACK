@@ -10,6 +10,8 @@
 
 
 SET(ALL_NEONDOT_MICROKERNEL_SRCS
+  src/qd8-f32-qb4w-gemm/gen/qd8-f32-qb4w-gemm-1x8c4-minmax-neondot.c
+  src/qd8-f32-qb4w-gemm/gen/qd8-f32-qb4w-gemm-4x8c4-minmax-neondot.c
   src/qd8-f32-qc4w-gemm/gen/qd8-f32-qc4w-gemm-1x8c4-minmax-neondot.c
   src/qd8-f32-qc4w-gemm/gen/qd8-f32-qc4w-gemm-1x16c4-minmax-neondot.c
   src/qd8-f32-qc4w-gemm/gen/qd8-f32-qc4w-gemm-2x8c4-minmax-neondot.c
