@@ -36,8 +36,9 @@ void xnn_${DATATYPE_SPEC}_gemm_minmax_ukernel_${MR}x${NR}__scalar(
   assert(mr <= ${MR});
   assert(nc != 0);
   assert(kc != 0);
-    assert (bl != 0);
-    assert (bl <= kc);
+  assert(bl != 0);
+  assert(bl <= kc);
+  assert(kc % ml == 0);
 
   $for M in range(MR):
     const int8_t* a${M} = (const int8_t*) ((uintptr_t) a + a_stride * ${M});

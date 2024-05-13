@@ -110,7 +110,7 @@ TEST(${TEST_NAME}, k_eq_${KBLOCK}) {
     .m(${MR})
     .n(${NR})
     .k(${KBLOCK})
-    $if KERNELTYPE == 'qc4w':
+    $if KERNELTYPE in ['qc4w', 'qb4w']:
       .b_zero_point(8)
     .Test(${", ".join(TEST_ARGS)});
 }
@@ -129,7 +129,7 @@ TEST(${TEST_NAME}, strided_cn) {
     .n(${NR})
     .k(${KBLOCK})
     .cn_stride(${next_prime(NR + 1)})
-    $if KERNELTYPE == 'qc4w':
+    $if KERNELTYPE in ['qc4w', 'qb4w']:
       .b_zero_point(8)
     .Test(${", ".join(TEST_ARGS)});
 }
@@ -149,7 +149,7 @@ $if UKERNEL_TYPE != "IGEMM":
       .n(${NR})
       .k(${KBLOCK})
       .a_stride(${next_prime(KBLOCK + 1)})
-      $if KERNELTYPE == 'qc4w':
+      $if KERNELTYPE in ['qc4w', 'qb4w']:
         .b_zero_point(8)
       .Test(${", ".join(TEST_ARGS)});
   }
@@ -170,7 +170,7 @@ TEST(${TEST_NAME}, k_eq_${KBLOCK}_subtile) {
         .n(n)
         .k(${KBLOCK})
         .iterations(1)
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -192,7 +192,7 @@ TEST(${TEST_NAME}, k_eq_${KBLOCK}_subtile_m) {
       .n(${NR})
       .k(${KBLOCK})
       .iterations(1)
-      $if KERNELTYPE == 'qc4w':
+      $if KERNELTYPE in ['qc4w', 'qb4w']:
         .b_zero_point(8)
       .Test(${", ".join(TEST_ARGS)});
   }
@@ -214,7 +214,7 @@ TEST(${TEST_NAME}, k_eq_${KBLOCK}_subtile_n) {
       .n(n)
       .k(${KBLOCK})
       .iterations(1)
-      $if KERNELTYPE == 'qc4w':
+      $if KERNELTYPE in ['qc4w', 'qb4w']:
         .b_zero_point(8)
       .Test(${", ".join(TEST_ARGS)});
   }
@@ -234,7 +234,7 @@ $if IS_PIPELINED:
       .m(${MR})
       .n(${NR})
       .k(${KBLOCK * 2})
-      $if KERNELTYPE == 'qc4w':
+      $if KERNELTYPE in ['qc4w', 'qb4w']:
         .b_zero_point(8)
       .Test(${", ".join(TEST_ARGS)});
   }
@@ -254,7 +254,7 @@ $if IS_PIPELINED:
         .n(${NR})
         .k(${KBLOCK * 2})
         .a_stride(${next_prime(KBLOCK * 2 + 1)})
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -275,7 +275,7 @@ $if IS_PIPELINED:
           .n(n)
           .k(${KBLOCK * 2})
           .iterations(1)
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -297,7 +297,7 @@ $if KBLOCK > 1:
         .m(${MR})
         .n(${NR})
         .k(k)
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -319,7 +319,7 @@ $if KBLOCK > 1:
           .n(${NR})
           .k(k)
           .a_stride(${next_prime(ADJKBLOCK + 1)})
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -342,7 +342,7 @@ $if KBLOCK > 1:
             .n(n)
             .k(k)
             .iterations(1)
-            $if KERNELTYPE == 'qc4w':
+            $if KERNELTYPE in ['qc4w', 'qb4w']:
               .b_zero_point(8)
             .Test(${", ".join(TEST_ARGS)});
         }
@@ -364,7 +364,7 @@ TEST(${TEST_NAME}, k_gt_${ADJKBLOCK}) {
       .m(${MR})
       .n(${NR})
       .k(k)
-      $if KERNELTYPE == 'qc4w':
+      $if KERNELTYPE in ['qc4w', 'qb4w']:
         .b_zero_point(8)
       .Test(${", ".join(TEST_ARGS)});
   }
@@ -386,7 +386,7 @@ $if UKERNEL_TYPE.startswith("GEMM"):
         .n(${NR})
         .k(k)
         .a_stride(${next_prime(10 if ADJKBLOCK == 1 else ADJKBLOCK * 2 + 1)})
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -409,7 +409,7 @@ TEST(${TEST_NAME}, k_gt_${ADJKBLOCK}_subtile) {
           .n(n)
           .k(k)
           .iterations(1)
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -432,7 +432,7 @@ $if KBLOCK > 1:
         .m(${MR})
         .n(${NR})
         .k(k)
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -454,7 +454,7 @@ $if KBLOCK > 1:
           .n(${NR})
           .k(k)
           .a_stride(${next_prime(KBLOCK * 10 + 1)})
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -477,7 +477,7 @@ $if KBLOCK > 1:
             .n(n)
             .k(k)
             .iterations(1)
-            $if KERNELTYPE == 'qc4w':
+            $if KERNELTYPE in ['qc4w', 'qb4w']:
               .b_zero_point(8)
             .Test(${", ".join(TEST_ARGS)});
         }
@@ -500,7 +500,7 @@ TEST(${TEST_NAME}, n_gt_${NR}) {
         .m(${MR})
         .n(n)
         .k(k)
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -524,7 +524,7 @@ $if JIT:
           .n(n)
           .k(k)
           .known_nc_mod_nr(false)
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -545,7 +545,7 @@ $if JIT:
       .n(${NR})
       .k(${KBLOCK})
       .relu(true)
-      $if KERNELTYPE == 'qc4w':
+      $if KERNELTYPE in ['qc4w', 'qb4w']:
         .b_zero_point(8)
       .Test(${", ".join(TEST_ARGS)});
   }
@@ -566,7 +566,7 @@ TEST(${TEST_NAME}, n_gt_${NR}_strided_cn) {
         .n(n)
         .k(k)
         .cn_stride(${next_prime(NR + 1)})
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -590,7 +590,7 @@ $if UKERNEL_TYPE != "IGEMM":
           .n(n)
           .k(k)
           .a_stride(${next_prime(KBLOCK * 5 + 1)})
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -614,7 +614,7 @@ TEST(${TEST_NAME}, n_gt_${NR}_subtile) {
           .n(n)
           .k(k)
           .iterations(1)
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -637,7 +637,7 @@ TEST(${TEST_NAME}, n_div_${NR}) {
         .m(${MR})
         .n(n)
         .k(k)
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -660,7 +660,7 @@ TEST(${TEST_NAME}, n_div_${NR}_strided_cn) {
         .n(n)
         .k(k)
         .cn_stride(${next_prime(NR + 1)})
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -684,7 +684,7 @@ $if UKERNEL_TYPE != "IGEMM":
           .n(n)
           .k(k)
           .a_stride(${next_prime(KBLOCK * 5 + 1)})
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -708,7 +708,7 @@ TEST(${TEST_NAME}, n_div_${NR}_subtile) {
           .n(n)
           .k(k)
           .iterations(1)
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -732,7 +732,7 @@ $if UKERNEL_TYPE.startswith("IGEMM"):
         .n(${NR})
         .k(k)
         .ks(3)
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -756,7 +756,7 @@ $if UKERNEL_TYPE.startswith("IGEMM"):
             .k(k)
             .ks(3)
             .iterations(1)
-            $if KERNELTYPE == 'qc4w':
+            $if KERNELTYPE in ['qc4w', 'qb4w']:
               .b_zero_point(8)
             .Test(${", ".join(TEST_ARGS)});
         }
@@ -780,7 +780,7 @@ $if UKERNEL_TYPE.startswith("IGEMM"):
           .n(n)
           .k(k)
           .ks(3)
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -803,7 +803,7 @@ $if UKERNEL_TYPE.startswith("IGEMM"):
           .n(n)
           .k(k)
           .ks(3)
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -828,7 +828,7 @@ TEST(${TEST_NAME}, strided_cm_subtile) {
           .k(k)
           .cm_stride(${next_prime(NR + 1)})
           .iterations(1)
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -853,7 +853,7 @@ $if UKERNEL_TYPE.startswith("IGEMM"):
         .k(k)
         .ks(3)
         .a_offset(${next_prime(MR * KBLOCK * 5 + 1)})
-        $if KERNELTYPE == 'qc4w':
+        $if KERNELTYPE in ['qc4w', 'qb4w']:
           .b_zero_point(8)
         .Test(${", ".join(TEST_ARGS)});
     }
@@ -877,7 +877,7 @@ $if UKERNEL_TYPE.startswith("IGEMM"):
           .ks(3)
           .a_offset(${next_prime(MR * KBLOCK * 5 + 1)})
           .zero_index(mz)
-          $if KERNELTYPE == 'qc4w':
+          $if KERNELTYPE in ['qc4w', 'qb4w']:
             .b_zero_point(8)
           .Test(${", ".join(TEST_ARGS)});
       }
@@ -899,7 +899,7 @@ $if ACTIVATION == "MINMAX":
       .n(${NR})
       .k(${KBLOCK})
       .qmin(128)
-      $if KERNELTYPE == 'qc4w':
+      $if KERNELTYPE in ['qc4w', 'qb4w']:
         .b_zero_point(8)
       .Test(${", ".join(TEST_ARGS)});
   }
@@ -918,7 +918,7 @@ $if ACTIVATION == "MINMAX":
       .n(${NR})
       .k(${KBLOCK})
       .qmax(128)
-      $if KERNELTYPE == 'qc4w':
+      $if KERNELTYPE in ['qc4w', 'qb4w']:
         .b_zero_point(8)
       .Test(${", ".join(TEST_ARGS)});
   }
@@ -937,7 +937,7 @@ TEST(${TEST_NAME}, strided_cm) {
     .n(${NR})
     .k(${KBLOCK})
     .cm_stride(${next_prime(NR + 1)})
-    $if KERNELTYPE == 'qc4w':
+    $if KERNELTYPE in ['qc4w', 'qb4w']:
       .b_zero_point(8)
     .Test(${", ".join(TEST_ARGS)});
 }
@@ -1039,7 +1039,7 @@ $if TEST_NAME.startswith('GENERATE') and DATATYPE in ['f32', 'f16']:
             .n(${NR})
             .k(k)
             .iterations(1)
-            $if KERNELTYPE == 'qc4w':
+            $if KERNELTYPE in ['qc4w', 'qb4w']:
               .b_zero_point(8)
             .Test(${", ".join(TEST_ARGS)});
         }
@@ -1150,7 +1150,7 @@ def generate_test_cases(ukernel, mr, nr, kr, sr, xw, k_block, init_fn, pack_fn,
     if datatype in ["f16", "f32"] and ukernel_type in ["qc8w", "qc4w"]:
       _, datatype, kerneltype, ukernel_type, activation, _ = ukernel.split("_", 5)
       datatype = datatype + "_" + kerneltype
-    if datatype == "qd8" and ukernel_type in ["f16", "f32"] and activation in ["qc8w", "qc4w"]:
+    if datatype == "qd8" and ukernel_type in ["f16", "f32"] and activation in ["qc8w", "qc4w", "qb4w"]:
       _, datatype, _, kerneltype, ukernel_type, activation, _ = ukernel.split("_", 6)
 
   if activation == "ukernel":
