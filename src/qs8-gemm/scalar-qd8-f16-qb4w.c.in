@@ -38,13 +38,13 @@ void xnn_${DATATYPE_SPEC}_gemm_minmax_ukernel_${MR}x${NR}__scalar(
   assert(kc != 0);
   assert(bl != 0);
   assert(bl <= kc);
-  assert(kc % ml == 0);
+  assert(kc % bl == 0);
 
   $for M in range(MR):
     const int8_t* a${M} = (const int8_t*) ((uintptr_t) a + a_stride * ${M});
     uint16_t* c${M} = (uint16_t*) ((uintptr_t) c + cm_stride * ${M});
     $if M > 0:
-        if XNN_UNPREDICTABLE(mr < ${M}) {
+        if XNN_UNPREDICTABLE(mr <= ${M}) {
             a${M} = a${M-1};
             c${M} = c${M-1};
         }

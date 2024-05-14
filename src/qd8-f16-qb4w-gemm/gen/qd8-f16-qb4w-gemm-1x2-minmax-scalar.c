@@ -33,8 +33,9 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_1x2__scalar(
   assert(mr <= 1);
   assert(nc != 0);
   assert(kc != 0);
-  assert (bl != 0);
-  assert (bl <= kc);
+  assert(bl != 0);
+  assert(bl <= kc);
+  assert(kc % bl == 0);
 
   const int8_t* a0 = (const int8_t*) ((uintptr_t) a + a_stride * 0);
   uint16_t* c0 = (uint16_t*) ((uintptr_t) c + cm_stride * 0);

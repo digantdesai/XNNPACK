@@ -33,26 +33,27 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_4x4__scalar(
   assert(mr <= 4);
   assert(nc != 0);
   assert(kc != 0);
-  assert (bl != 0);
-  assert (bl <= kc);
+  assert(bl != 0);
+  assert(bl <= kc);
+  assert(kc % bl == 0);
 
   const int8_t* a0 = (const int8_t*) ((uintptr_t) a + a_stride * 0);
   uint16_t* c0 = (uint16_t*) ((uintptr_t) c + cm_stride * 0);
   const int8_t* a1 = (const int8_t*) ((uintptr_t) a + a_stride * 1);
   uint16_t* c1 = (uint16_t*) ((uintptr_t) c + cm_stride * 1);
-  if XNN_UNPREDICTABLE(mr < 1) {
+  if XNN_UNPREDICTABLE(mr <= 1) {
       a1 = a0;
       c1 = c0;
   }
   const int8_t* a2 = (const int8_t*) ((uintptr_t) a + a_stride * 2);
   uint16_t* c2 = (uint16_t*) ((uintptr_t) c + cm_stride * 2);
-  if XNN_UNPREDICTABLE(mr < 2) {
+  if XNN_UNPREDICTABLE(mr <= 2) {
       a2 = a1;
       c2 = c1;
   }
   const int8_t* a3 = (const int8_t*) ((uintptr_t) a + a_stride * 3);
   uint16_t* c3 = (uint16_t*) ((uintptr_t) c + cm_stride * 3);
-  if XNN_UNPREDICTABLE(mr < 3) {
+  if XNN_UNPREDICTABLE(mr <= 3) {
       a3 = a2;
       c3 = c2;
   }

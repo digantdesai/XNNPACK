@@ -33,14 +33,15 @@ void xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x2__scalar(
   assert(mr <= 2);
   assert(nc != 0);
   assert(kc != 0);
-  assert (bl != 0);
-  assert (bl <= kc);
+  assert(bl != 0);
+  assert(bl <= kc);
+  assert(kc % bl == 0);
 
   const int8_t* a0 = (const int8_t*) ((uintptr_t) a + a_stride * 0);
   uint16_t* c0 = (uint16_t*) ((uintptr_t) c + cm_stride * 0);
   const int8_t* a1 = (const int8_t*) ((uintptr_t) a + a_stride * 1);
   uint16_t* c1 = (uint16_t*) ((uintptr_t) c + cm_stride * 1);
-  if XNN_UNPREDICTABLE(mr < 1) {
+  if XNN_UNPREDICTABLE(mr <= 1) {
       a1 = a0;
       c1 = c0;
   }
