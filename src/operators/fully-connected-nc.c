@@ -1944,7 +1944,8 @@ static enum xnn_status reshape_fully_connected_nc(
 
   size_t w_stride = extra_weights_elements_size + (k_stride << log2_filter_element_size);
   // If blockwise quantization is enabled, we need to update w_stride to account for extra scales
-  if (fully_connected_op->type == xnn_operator_type_fully_connected_nc_qd8_f32_qb4w) {
+  if (fully_connected_op->type == xnn_operator_type_fully_connected_nc_qd8_f32_qb4w ||
+      fully_connected_op->type == xnn_operator_type_fully_connected_nc_qd8_f16_qb4w) {
     size_t num_blocks = input_channels / fully_connected_op->k_block_size;
     w_stride += num_blocks * sizeof(float);
   }
