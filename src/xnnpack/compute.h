@@ -311,6 +311,8 @@ struct gemm_context {
   size_t gc_stride;
   // Size, in bytes, of each element of C.
   uint32_t log2_csize;
+  // Size, in bytes, of of each block of weights.
+  size_t block_size;
   // Number of batch dimensions in A, B, and C.
   uint32_t num_batch_dims;
   // Batch dimensions of the input A.
@@ -325,6 +327,7 @@ struct gemm_context {
   union {
     struct xnn_hmp_gemm_ukernel ukernel;
     struct xnn_hmp_dqgemm_ukernel dq_ukernel;
+    struct xnn_hmp_dqgemm_bl_ukernel dq_bl_ukernel;
   };
   // Parameters for dynamically quantized inputs.
   const struct xnn_qd8_quantization_params* quantization_params;
@@ -357,6 +360,13 @@ struct gemm_context {
       size_t mr_block_size,
       size_t nr_block_size);
 
+  XNN_PRIVATE void xnn_compute_dqgemm_bl(
+      const struct gemm_context context[restrict XNN_MIN_ELEMENTS(1)],
+      size_t mr_block_start,
+      size_t nr_block_start,
+      size_t mr_block_size,
+      size_t nr_block_size);
+
   XNN_PRIVATE void xnn_compute_gemm(
       const struct gemm_context context[restrict XNN_MIN_ELEMENTS(1)],
       size_t mr_block_start,
@@ -383,6 +393,14 @@ struct gemm_context {
         size_t nr_block_size);
 
     XNN_PRIVATE void xnn_compute_hmp_dqgemm(
+        const struct gemm_context context[restrict XNN_MIN_ELEMENTS(1)],
+        uint32_t uarch_index,
+        size_t mr_block_start,
+        size_t nr_block_start,
+        size_t mr_block_size,
+        size_t nr_block_size);
+
+    XNN_PRIVATE void xnn_compute_hmp_dqgemm_bl(
         const struct gemm_context context[restrict XNN_MIN_ELEMENTS(1)],
         uint32_t uarch_index,
         size_t mr_block_start,

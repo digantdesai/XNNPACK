@@ -533,6 +533,13 @@ struct xnn_hmp_dqgemm_ukernel {
 #endif  // XNN_PLATFORM_JIT
 };
 
+struct xnn_hmp_dqgemm_bl_ukernel {
+  xnn_dqgemm_bl_ukernel_fn function[XNN_MAX_UARCH_TYPES];
+#if XNN_PLATFORM_JIT
+  struct xnn_generated_code_chunk generated_code_chunk[XNN_MAX_UARCH_TYPES];
+#endif  // XNN_PLATFORM_JIT
+};
+
 struct xnn_hmp_gemm_ukernel {
   xnn_gemm_ukernel_fn function[XNN_MAX_UARCH_TYPES];
 #if XNN_PLATFORM_JIT
@@ -543,6 +550,23 @@ struct xnn_hmp_gemm_ukernel {
 static inline struct xnn_hmp_dqgemm_ukernel xnn_init_hmp_dqgemm_ukernel(
     xnn_dqgemm_ukernel_fn function) {
   struct xnn_hmp_dqgemm_ukernel ukernel = {{ function }};
+#if XNN_PLATFORM_JIT
+  ukernel.generated_code_chunk[0].offset = SIZE_MAX;
+  ukernel.generated_code_chunk[0].offset_end = SIZE_MAX;
+#endif  // XNN_PLATFORM_JIT
+  for (size_t i = 1; i < XNN_MAX_UARCH_TYPES; i++) {
+    ukernel.function[i] = function;
+#if XNN_PLATFORM_JIT
+    ukernel.generated_code_chunk[i].offset = SIZE_MAX;
+    ukernel.generated_code_chunk[i].offset_end = SIZE_MAX;
+#endif  // XNN_PLATFORM_JIT
+  }
+  return ukernel;
+}
+
+static inline struct xnn_hmp_dqgemm_bl_ukernel xnn_init_hmp_dqgemm_bl_ukernel(
+    xnn_dqgemm_bl_ukernel_fn function) {
+  struct xnn_hmp_dqgemm_bl_ukernel ukernel = {{ function }};
 #if XNN_PLATFORM_JIT
   ukernel.generated_code_chunk[0].offset = SIZE_MAX;
   ukernel.generated_code_chunk[0].offset_end = SIZE_MAX;
@@ -654,6 +678,7 @@ struct gemm_fused_ukernels {
   union {
     struct xnn_hmp_gemm_ukernel gemm[XNN_MAX_MR];
     struct xnn_hmp_dqgemm_ukernel dqgemm[XNN_MAX_MR];
+    struct xnn_hmp_dqgemm_bl_ukernel dqgemm_bl[XNN_MAX_MR];
   };
   union {
     struct xnn_hmp_igemm_ukernel igemm[XNN_MAX_MR];
@@ -736,6 +761,7 @@ struct xnn_gemm_config {
   } init;
   xnn_packw_gemm_gio_ukernel_fn pack_gemm_gio;
   xnn_packw_gemm_goi_ukernel_fn pack_gemm_goi;
+  xnn_packw_gemm_goi_bl_ukernel_fn pack_gemm_goi_bl;
   xnn_pack_conv_goki_w_fn pack_igemm_goki;
   xnn_pack_conv_kgo_w_fn pack_igemm_kgo;
   xnn_pack_deconv_goki_w_fn pack_deconv_goki;
