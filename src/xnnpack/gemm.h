@@ -20,17 +20,17 @@ extern "C" {
 
 
 #define DECLARE_BF16_GEMM_MINMAX_UKERNEL_FUNCTION(fn_name) \
-  void fn_name(                                            \
-      size_t mr,                                           \
-      size_t nc,                                           \
-      size_t kc,                                           \
-      const void* a,                                       \
-      size_t a_stride,                                     \
-      const void* w,                                       \
-      void* c,                                             \
-      size_t cm_stride,                                    \
-      size_t cn_stride,                                    \
-      const union xnn_bf16_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
+void fn_name(                                            \
+  size_t mr,                                           \
+  size_t nc,                                           \
+  size_t kc,                                           \
+  const void* a,                                       \
+  size_t a_stride,                                     \
+  const void* w,                                       \
+  void* c,                                             \
+  size_t cm_stride,                                    \
+  size_t cn_stride,                                    \
+  const union xnn_bf16_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
 
 DECLARE_BF16_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_bf16_gemm_minmax_ukernel_1x4c8__neonfma_shland)
 DECLARE_BF16_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_bf16_gemm_minmax_ukernel_2x4c8__neonfma_shland)
@@ -63,17 +63,17 @@ DECLARE_BF16_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_bf16_gemm_minmax_ukernel_5x4c8__ne
 
 
 #define DECLARE_F16_GEMM_MINMAX_UKERNEL_FUNCTION(fn_name) \
-  void fn_name(                                           \
-      size_t mr,                                          \
-      size_t nc,                                          \
-      size_t kc,                                          \
-      const void* a,                                      \
-      size_t a_stride,                                    \
-      const void* w,                                      \
-      void* c,                                            \
-      size_t cm_stride,                                   \
-      size_t cn_stride,                                   \
-      const union xnn_f16_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
+void fn_name(                                           \
+  size_t mr,                                          \
+  size_t nc,                                          \
+  size_t kc,                                          \
+  const void* a,                                      \
+  size_t a_stride,                                    \
+  const void* w,                                      \
+  void* c,                                            \
+  size_t cm_stride,                                   \
+  size_t cn_stride,                                   \
+  const union xnn_f16_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
 
 DECLARE_F16_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f16_gemm_minmax_ukernel_1x8__asm_aarch64_neonfp16arith_ld64)
 DECLARE_F16_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f16_gemm_minmax_ukernel_1x8__neonfp16arith_ld64)
@@ -132,43 +132,43 @@ DECLARE_F16_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f16_gemm_minmax_ukernel_7x64__avx51
 DECLARE_F16_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f16_gemm_minmax_ukernel_8x64__avx512fp16_broadcast)
 
 #define DECLARE_F32_GEMM_UKERNEL_FUNCTION(fn_name) \
-  XNN_INTERNAL void fn_name(                       \
-      size_t mr,                                   \
-      size_t nc,                                   \
-      size_t kc,                                   \
-      const float* a,                              \
-      size_t a_stride,                             \
-      const float* w,                              \
-      float* c,                                    \
-      size_t cm_stride,                            \
-      size_t cn_stride,                            \
-      const union xnn_f32_default_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
+XNN_INTERNAL void fn_name(                       \
+  size_t mr,                                   \
+  size_t nc,                                   \
+  size_t kc,                                   \
+  const float* a,                              \
+  size_t a_stride,                             \
+  const float* w,                              \
+  float* c,                                    \
+  size_t cm_stride,                            \
+  size_t cn_stride,                            \
+  const union xnn_f32_default_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
 
 #define DECLARE_F32_GEMM_RELU_UKERNEL_FUNCTION(fn_name) \
-  XNN_INTERNAL void fn_name(                            \
-      size_t mr,                                        \
-      size_t nc,                                        \
-      size_t kc,                                        \
-      const float* a,                                   \
-      size_t a_stride,                                  \
-      const float* w,                                   \
-      float* c,                                         \
-      size_t cm_stride,                                 \
-      size_t cn_stride,                                 \
-      const union xnn_f32_relu_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
+XNN_INTERNAL void fn_name(                            \
+  size_t mr,                                        \
+  size_t nc,                                        \
+  size_t kc,                                        \
+  const float* a,                                   \
+  size_t a_stride,                                  \
+  const float* w,                                   \
+  float* c,                                         \
+  size_t cm_stride,                                 \
+  size_t cn_stride,                                 \
+  const union xnn_f32_relu_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
 
 #define DECLARE_F32_GEMM_MINMAX_UKERNEL_FUNCTION(fn_name) \
-  XNN_INTERNAL void fn_name(                              \
-      size_t mr,                                          \
-      size_t nc,                                          \
-      size_t kc,                                          \
-      const float* a,                                     \
-      size_t a_stride,                                    \
-      const float* w,                                     \
-      float* c,                                           \
-      size_t cm_stride,                                   \
-      size_t cn_stride,                                   \
-      const union xnn_f32_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
+XNN_INTERNAL void fn_name(                              \
+  size_t mr,                                          \
+  size_t nc,                                          \
+  size_t kc,                                          \
+  const float* a,                                     \
+  size_t a_stride,                                    \
+  const float* w,                                     \
+  float* c,                                           \
+  size_t cm_stride,                                   \
+  size_t cn_stride,                                   \
+  const union xnn_f32_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
 
 DECLARE_F32_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f32_gemm_goi_minmax_ukernel_1x8__asm_aarch64_neonfma_ld128)
 DECLARE_F32_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f32_gemm_goi_minmax_ukernel_1x8__asm_aarch64_neonfma_ld128_prfm)
@@ -533,17 +533,17 @@ DECLARE_F32_GEMM_UKERNEL_FUNCTION(xnn_f32_gemm_ukernel_1x4v__rvv)
 DECLARE_F32_GEMM_UKERNEL_FUNCTION(xnn_f32_gemm_ukernel_7x4v__rvv)
 
 #define DECLARE_F32_QC4W_GEMM_MINMAX_UKERNEL_FUNCTION(fn_name) \
-  XNN_INTERNAL void fn_name(                                   \
-      size_t mr,                                               \
-      size_t nr,                                               \
-      size_t k,                                                \
-      const float* a,                                          \
-      size_t a_stride,                                         \
-      const void* w,                                           \
-      float* c,                                                \
-      size_t cm_stride,                                        \
-      size_t cn_stride,                                        \
-      const union xnn_f32_qc4w_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
+XNN_INTERNAL void fn_name(                                   \
+  size_t mr,                                               \
+  size_t nr,                                               \
+  size_t k,                                                \
+  const float* a,                                          \
+  size_t a_stride,                                         \
+  const void* w,                                           \
+  float* c,                                                \
+  size_t cm_stride,                                        \
+  size_t cn_stride,                                        \
+  const union xnn_f32_qc4w_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
 
 DECLARE_F32_QC4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f32_qc4w_gemm_minmax_ukernel_1x8__aarch64_neonfma_lane_ld128)
 DECLARE_F32_QC4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f32_qc4w_gemm_minmax_ukernel_4x8__aarch64_neonfma_lane_ld128)
@@ -641,18 +641,18 @@ DECLARE_F32_QC4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f32_qc4w_gemm_minmax_ukernel_4
 DECLARE_F32_QC4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_f32_qc4w_gemm_minmax_ukernel_4x4__scalar)
 
 #define DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(fn_name)                                     \
-  XNN_INTERNAL void fn_name(                                                                           \
-      size_t mr,                                                                                       \
-      size_t nr,                                                                                       \
-      size_t k,                                                                                        \
-      const int8_t* a,                                                                                 \
-      size_t a_stride,                                                                                 \
-      const void* w,                                                                                   \
-      uint16_t* c,                                                                                     \
-      size_t cm_stride,                                                                                \
-      size_t cn_stride,                                                                                \
-      const union xnn_f16_qb4w_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)],                 \
-      const struct xnn_qd8_quantization_params quantization_params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
+XNN_INTERNAL void fn_name(                                                                           \
+  size_t mr,                                                                                       \
+  size_t nr,                                                                                       \
+  size_t k,                                                                                        \
+  const int8_t* a,                                                                                 \
+  size_t a_stride,                                                                                 \
+  const void* w,                                                                                   \
+  uint16_t* c,                                                                                     \
+  size_t cm_stride,                                                                                \
+  size_t cn_stride,                                                                                \
+  const union xnn_f16_qb4w_minmax_params params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)],                 \
+  const struct xnn_qd8_quantization_params quantization_params[XNN_RESTRICT XNN_MIN_ELEMENTS(1)]);
 
 DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_1x2__scalar)
 DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_1x4__scalar)
@@ -661,6 +661,17 @@ DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_u
 DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x4__scalar)
 DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x8__scalar)
 DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_4x4__scalar)
+
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_1x16__neonfp16arith_mlal_lane)
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x16__neonfp16arith_mlal_lane)
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_3x16__neonfp16arith_mlal_lane)
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_4x16__neonfp16arith_mlal_lane)
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_6x16__neonfp16arith_mlal_lane)
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_1x16__neonfp16arith_mlal_lane_prfm)
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_2x16__neonfp16arith_mlal_lane_prfm)
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_3x16__neonfp16arith_mlal_lane_prfm)
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_4x16__neonfp16arith_mlal_lane_prfm)
+DECLARE_QD8_F16_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f16_qb4w_gemm_minmax_ukernel_6x16__neonfp16arith_mlal_lane_prfm)
 
 #define DECLARE_F32_QC8W_GEMM_UKERNEL_FUNCTION(fn_name) \
   XNN_INTERNAL void fn_name(                            \
@@ -1894,6 +1905,17 @@ DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_u
 DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_2x4__scalar)
 DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_2x8__scalar)
 DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_4x4__scalar)
+
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16__neon_mlal_lane)
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_2x16__neon_mlal_lane)
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_3x16__neon_mlal_lane)
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_4x16__neon_mlal_lane)
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_6x16__neon_mlal_lane)
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_1x16__neon_mlal_lane_prfm)
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_2x16__neon_mlal_lane_prfm)
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_3x16__neon_mlal_lane_prfm)
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_4x16__neon_mlal_lane_prfm)
+DECLARE_QD8_F32_QB4W_GEMM_MINMAX_UKERNEL_FUNCTION(xnn_qd8_f32_qb4w_gemm_minmax_ukernel_6x16__neon_mlal_lane_prfm)
 
 #define DECLARE_QD8_F16_QC8W_GEMM_MINMAX_UKERNEL_FUNCTION(fn_name)                                     \
   XNN_INTERNAL void fn_name(                                                                           \
